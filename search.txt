@@ -1,0 +1,137 @@
+./app/paint/gimpclone.c:303:  GimpImageBaseType  color_type;
+./app/display/gimpdisplayshell-dnd.c:215:      GimpImageBaseType  type;
+./app/core/gimpprojection.c:217:gimp_projection_estimate_memsize (GimpImageBaseType type,
+./app/core/gimpimage.c:1328:                GimpImageBaseType  base_type)
+./app/core/gimpimage.c:1340:GimpImageBaseType
+./app/core/gimpimage.c:2187:                            GimpImageBaseType   src_type,
+./app/core/gimpimage.h:114:  GimpImageBaseType  base_type;             /*  base gimp_image type         */
+./app/core/gimpimage.h:244:                                                  GimpImageBaseType   base_type);
+./app/core/gimpimage.h:246:GimpImageBaseType  gimp_image_base_type            (const GimpImage  *image);
+./app/core/gimpimage.h:382:                                                  GimpImageBaseType   src_type,
+./app/core/gimpchannel.c:412:  GimpImageBaseType  old_base_type;
+./app/core/gimpimageundo.c:313:        GimpImageBaseType base_type;
+./app/core/gimpimage-convert.c:533:static QuantizeObj * initialize_median_cut (GimpImageBaseType      old_type,
+./app/core/gimpimage-convert.c:756:                    GimpImageBaseType        new_type,
+./app/core/gimpimage-convert.c:769:  GimpImageBaseType  old_type;
+./app/core/gimpimage-convert.c:4190:initialize_median_cut (GimpImageBaseType       type,
+./app/core/gimptemplate.c:319:  GimpImageBaseType   image_type;
+./app/core/gimplayer.c:554:  GimpImageBaseType  old_base_type;
+./app/core/gimplayer.c:555:  GimpImageBaseType  new_base_type;
+./app/core/gimplayer.c:916:  GimpImageBaseType base_type  = GIMP_IMAGE_TYPE_BASE_TYPE (src_type);
+./app/core/gimp.h:170:                                          GimpImageBaseType    type,
+./app/core/gimpimageundo.h:40:  GimpImageBaseType  base_type;
+./app/core/gimpprojection.h:102:gint64           gimp_projection_estimate_memsize (GimpImageBaseType     type,
+./app/core/gimpdrawable-convert.h:25:                                        GimpImageBaseType   old_base_type);
+./app/core/gimpdrawable-convert.h:28:                                        GimpImageBaseType   old_base_type);
+./app/core/gimp.c:933:                   GimpImageBaseType  type,
+./app/core/gimptemplate.h:67:  GimpImageBaseType  image_type;
+./app/core/gimpselection.c:609:  GimpImageBaseType  base_type = GIMP_RGB;
+./app/core/gimpimage-convert.h:27:                                    GimpImageBaseType        new_type,
+./app/core/gimpdrawable-preview.c:103:  GimpImageBaseType base_type;
+./app/core/gimpdrawable-convert.c:38:                           GimpImageBaseType  old_base_type)
+./app/core/gimpdrawable-convert.c:142:                                 GimpImageBaseType  old_base_type)
+./app/pdb/gimppdb-utils.c:387:                             GimpImageBaseType   type,
+./app/pdb/gimppdb-utils.c:416:                                 GimpImageBaseType   type,
+./app/pdb/gimppdb-utils.h:60:                                                 GimpImageBaseType   type,
+./app/pdb/gimppdb-utils.h:63:                                                 GimpImageBaseType   type,
+./app/paint-funcs/paint-funcs.h:388:                                           GimpImageBaseType  type,
+./app/paint-funcs/paint-funcs.c:2233:                     GimpImageBaseType  type,
+./app/actions/image-commands.c:158:  GimpImageBaseType  value;
+./app/widgets/gimptoolbox-dnd.c:184:  GimpImageBaseType  type;
+./app/widgets/gimpimagepropview.c:433:  GimpImageBaseType  type;
+./libgimpbase/gimpbaseenums.c:504:      type = g_enum_register_static ("GimpImageBaseType", values);
+./libgimpbase/gimpbaseenums.h:224:} GimpImageBaseType;
+./ChangeLog.pre-1-2:18113:	GimpImageBaseType, LayerModeEffects, PaintApplicationMode,
+./ChangeLog.pre-2-4:33674:	* app/paint-funcs/paint-funcs.[ch]: pass GimpImageBaseType to
+./libgimp/gimpenums.c:723:  "GimpImageBaseType",
+./libgimp/gimpimage_pdb.c:123:                GimpImageBaseType type)
+./libgimp/gimpimage_pdb.c:220:GimpImageBaseType
+./libgimp/gimpimage_pdb.c:225:  GimpImageBaseType base_type = 0;
+./libgimp/gimpbuffer_pdb.h:40:GimpImageBaseType gimp_buffer_get_image_type (const gchar *buffer_name);
+./libgimp/gimpexport.c:641:  GimpImageBaseType  type;
+./libgimp/gimpbuffer_pdb.c:245:GimpImageBaseType
+./libgimp/gimpbuffer_pdb.c:250:  GimpImageBaseType image_type = 0;
+./libgimp/gimpenums.c.tail:84:  "GimpImageBaseType",
+./libgimp/gimpimage_pdb.h:36:                                                              GimpImageBaseType       type);
+./libgimp/gimpimage_pdb.h:39:GimpImageBaseType        gimp_image_base_type                (gint32                  image_ID);
+./plug-ins/file-fits/fits.c:98:				GimpImageBaseType   itype,
+./plug-ins/file-fits/fits.c:510:                  GimpImageBaseType   itype,
+./plug-ins/file-fits/fits.c:559:  GimpImageBaseType itype;
+./plug-ins/file-psd/psd-load.c:90:static GimpImageType    get_gimp_image_type        (const GimpImageBaseType image_base_type,
+./plug-ins/file-psd/psd-load.c:1765:get_gimp_image_type (const GimpImageBaseType image_base_type,
+./plug-ins/file-psd/psd-save.c:121:  GimpImageBaseType    baseType;
+./plug-ins/file-psd/psd-save.c:620:gimpBaseTypeToPsdMode (GimpImageBaseType gimpBaseType)
+./plug-ins/file-psd/psd.h:543:  GimpImageBaseType     base_type;              /* Image base colour mode: (GIMP) */
+./plug-ins/file-bmp/bmp-read.c:578:  GimpImageBaseType  base_type;
+./plug-ins/file-xjt/xjt.c:332:  GimpImageBaseType        image_type;
+./plug-ins/file-xjt/xjt.c:1571:   GimpImageBaseType l_image_type;
+./plug-ins/file-xjt/xjt.c:1663:  GimpImageBaseType l_image_type;
+./plug-ins/pygimp/pygimp-image.c:1380:    GimpImageBaseType type = GIMP_RGB;
+./plug-ins/common/file-sunras.c:110:				GimpImageBaseType type,
+./plug-ins/common/file-sunras.c:948:                  GimpImageBaseType   type,
+./plug-ins/common/file-xwd.c:156:                                   GimpImageBaseType type,
+./plug-ins/common/file-xwd.c:1191:                  GimpImageBaseType    type,
+./plug-ins/common/file-raw.c:658:  GimpImageBaseType  itype    = GIMP_RGB_IMAGE;
+./plug-ins/common/decompose.c:70:                                 GimpImageBaseType   type,
+./plug-ins/common/decompose.c:81:                                 GimpImageBaseType   type,
+./plug-ins/common/decompose.c:673:                  GimpImageBaseType   type,
+./plug-ins/common/decompose.c:702:                  GimpImageBaseType   type,
+./plug-ins/common/value-propagate.c:89:static void         set_value               (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:92:static void         initialize_white        (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:95:static void         propagate_white         (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:98:static void         initialize_black        (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:101:static void         propagate_black         (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:104:static void         initialize_middle       (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:107:static void         propagate_middle        (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:110:static void         set_middle_to_peak      (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:113:static void         set_foreground_to_peak  (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:116:static void         initialize_foreground   (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:119:static void         initialize_background   (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:122:static void         propagate_a_color       (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:125:static void         propagate_opaque        (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:128:static void         propagate_transparent   (GimpImageBaseType,
+./plug-ins/common/value-propagate.c:180:  void  (*initializer) (GimpImageBaseType, gint, guchar *, guchar *, gpointer *);
+./plug-ins/common/value-propagate.c:181:  void  (*updater) (GimpImageBaseType, gint, guchar *, guchar *, guchar *, gpointer);
+./plug-ins/common/value-propagate.c:182:  void  (*finalizer) (GimpImageBaseType, gint, guchar *, guchar *, guchar *, gpointer);
+./plug-ins/common/value-propagate.c:410:  GimpImageBaseType  dtype;
+./plug-ins/common/value-propagate.c:565:set_value (GimpImageBaseType  dtype,
+./plug-ins/common/value-propagate.c:633:initialize_white (GimpImageBaseType   dtype,
+./plug-ins/common/value-propagate.c:659:propagate_white (GimpImageBaseType  dtype,
+./plug-ins/common/value-propagate.c:692:initialize_black (GimpImageBaseType   dtype,
+./plug-ins/common/value-propagate.c:717:propagate_black (GimpImageBaseType  image_type,
+./plug-ins/common/value-propagate.c:761:initialize_middle (GimpImageBaseType   image_type,
+./plug-ins/common/value-propagate.c:795:propagate_middle (GimpImageBaseType  image_type,
+./plug-ins/common/value-propagate.c:846:set_middle_to_peak (GimpImageBaseType  image_type,
+./plug-ins/common/value-propagate.c:905:set_foreground_to_peak (GimpImageBaseType  image_type,
+./plug-ins/common/value-propagate.c:956:initialize_foreground (GimpImageBaseType   image_type,
+./plug-ins/common/value-propagate.c:975:initialize_background (GimpImageBaseType   image_type,
+./plug-ins/common/value-propagate.c:994:propagate_a_color (GimpImageBaseType  image_type,
+./plug-ins/common/value-propagate.c:1022:propagate_opaque (GimpImageBaseType  image_type,
+./plug-ins/common/value-propagate.c:1045:propagate_transparent (GimpImageBaseType  image_type,
+./plug-ins/common/file-pat.c:322:  GimpImageBaseType base_type;
+./plug-ins/common/file-gbr.c:352:  GimpImageBaseType  base_type;
+./plug-ins/common/animation-play.c:132:static GimpImageBaseType  imagetype;
+./plug-ins/common/animation-play.c:567:build_dialog (GimpImageBaseType  basetype,
+./plug-ins/common/file-tga.c:951:  GimpImageBaseType  itype = 0;
+./plug-ins/common/film.c:733:  GimpImageBaseType gitype;
+./plug-ins/common/animation-optimize.c:108:static  GimpImageBaseType imagetype;
+./plug-ins/common/compose.c:921:  GimpImageBaseType gitype;
+./plug-ins/common/gee.c:81:static GimpImageBaseType  imagetype;
+./plug-ins/common/tile.c:222:  GimpImageBaseType  image_type   = GIMP_RGB;
+./plug-ins/common/file-ps.c:221:                                GimpImageBaseType  type,
+./plug-ins/common/file-ps.c:1912:                  GimpImageBaseType   type,
+./plug-ins/common/file-ps.c:1999:  GimpImageBaseType imagetype;
+./plug-ins/common/gee-zoom.c:98:static GimpImageBaseType  imagetype;
+./plug-ins/common/file-pix.c:333:  GimpImageBaseType  imgtype;
+./tools/pdbgen/pdb/image.pdb:105:	{ name => 'type', type => 'enum GimpImageBaseType',
+./tools/pdbgen/pdb/image.pdb:1521:	{ name => 'base_type', type => 'enum GimpImageBaseType',
+./tools/pdbgen/pdb/buffer.pdb:215:	{ name => 'image_type', type => 'enum GimpImageBaseType',
+./tools/pdbgen/enums.pl:155:    GimpImageBaseType =>
+./compile.log:1873:film.c:474:47: warning: comparison between ‘GimpImageBaseType’ {aka type ‘GimpImageBaseType’ {aka ‘enum <anonymous>’} [-Wswitch]
+./ChangeLog.pre-2-2:11174:	GimpImageBaseType ...
+./devel-docs/libgimpbase/libgimpbase-sections.txt:29:GimpImageBaseType
+./devel-docs/libgimpbase/tmpl/gimpbaseenums.sgml:167:<!-- ##### ENUM GimpImageBaseType ##### -->
+./devel-docs/xcf.txt:282:                       (enum GimpImageBaseType in libgimpbase/gimpbaseenums.h)
+./ChangeLog.pre-2-0:19706:	GimpImageBaseType enums that broke the plug-in for non-RGB images.
+./ChangeLog.pre-2-0:38193:	translatable names to GimpImageBaseType.
+./ChangeLog.pre-2-0:45122:	* app/core/core-types.h: removed GimpImageBaseType enum ...

@@ -30,7 +30,7 @@ file_ico_SOURCES = \
 	ico-save.c	\
 	ico-save.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

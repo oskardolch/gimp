@@ -1173,11 +1173,11 @@ dialog_update_preview (GimpPreview *preview)
   gint    y;
   gint    x1, y1;
   gint    width, height;
-  gint    bytes;
+  //gint    bytes;
 
   gimp_preview_get_position (preview, &x1, &y1);
   gimp_preview_get_size (preview, &width, &height);
-  bytes = drawable->bpp;
+  //bytes = drawable->bpp;
 
   /* Initialize source rows */
   gimp_pixel_rgn_init (&bmint.src_rgn, drawable,

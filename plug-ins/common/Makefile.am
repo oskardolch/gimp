@@ -31,7 +31,7 @@ EXTRA_DIST = \
 	mkgen.pl	\
 	plugin-defs.pl
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)
@@ -2089,7 +2089,8 @@ screenshot_LDADD = \
 	$(GTK_LIBS)		\
 	$(SCREENSHOT_LIBS)		\
 	$(RT_LIBS)		\
-	$(INTLLIBS)
+	$(INTLLIBS) \
+  -lX11
 
 semi_flatten_SOURCES = \
 	semi-flatten.c

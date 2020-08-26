@@ -23,7 +23,7 @@ file_faxg3_SOURCES = \
 	g3.c		\
 	g3.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GLIB_CFLAGS)	\
 	-I$(includedir)

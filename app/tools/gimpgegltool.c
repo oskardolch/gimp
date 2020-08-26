@@ -185,7 +185,7 @@ gimp_gegl_tool_map (GimpImageMapTool *image_map_tool)
   if (! tool->config)
     return;
 
-  pspecs = gegl_list_properties (tool->operation, &n_pspecs);
+  pspecs = gegl_operation_list_properties (tool->operation, &n_pspecs);
 
   for (i = 0; i < n_pspecs; i++)
     {
@@ -348,13 +348,14 @@ gimp_gegl_tool_dialog (GimpImageMapTool *image_map_tool)
   for (iter = opclasses; iter; iter = iter->next)
     {
       GeglOperationClass *opclass = GEGL_OPERATION_CLASS (iter->data);
+      const gchar *categories = gegl_operation_class_get_key(opclass, "categories");
 
-      if (strstr (opclass->categories, "color")   ||
-          strstr (opclass->categories, "enhance") ||
-          strstr (opclass->categories, "misc")    ||
-          strstr (opclass->categories, "blur")    ||
-          strstr (opclass->categories, "edge")    ||
-          strstr (opclass->categories, "render"))
+      if (strstr (categories, "color")   ||
+          strstr (categories, "enhance") ||
+          strstr (categories, "misc")    ||
+          strstr (categories, "blur")    ||
+          strstr (categories, "edge")    ||
+          strstr (categories, "render"))
         {
 	  const gchar *stock_id;
 	  const gchar *label;
@@ -476,7 +477,7 @@ gimp_param_spec_duplicate (GParamSpec *pspec)
                                      spec->default_value,
                                      pspec->flags);
 
-          if (GEGL_IS_PARAM_SPEC_MULTILINE (pspec))
+          if (GEGL_IS_PARAM_SPEC_ENUM (pspec))
             {
               g_param_spec_set_qdata (new, multiline_quark,
                                       GINT_TO_POINTER (TRUE));
@@ -691,7 +692,7 @@ gimp_gegl_tool_config_class_init (GObjectClass *klass,
   klass->set_property = gimp_gegl_tool_config_set_property;
   klass->get_property = gimp_gegl_tool_config_get_property;
 
-  pspecs = gegl_list_properties (operation, &n_pspecs);
+  pspecs = gegl_operation_list_properties (operation, &n_pspecs);
 
   for (i = 0; i < n_pspecs; i++)
     {

@@ -709,15 +709,14 @@ init_calculation (gint32 drawable_id)
   gimp_rgb_get_uchar (&color, &back_color[0], &back_color[1], &back_color[2]);
 }
 
-static gint32
-do_curl_effect (gint32 drawable_id)
+static gint32 do_curl_effect(gint32 drawable_id)
 {
   gint          x = 0;
   gint          y = 0;
   gboolean      color_image;
   gint          x1, y1, k;
   guint         alpha_pos, progress, max_progress;
-  gdouble       intensity, alpha, beta;
+  gdouble       intensity, alpha; // beta;
   GimpVector2   v, dl, dr;
   gdouble       dl_mag, dr_mag, angle, factor;
   guchar       *pp, *dest, fore_grayval, back_grayval;
@@ -727,192 +726,153 @@ do_curl_effect (gint32 drawable_id)
   gint32        curl_layer_id;
   guchar       *grad_samples  = NULL;
 
-  color_image = gimp_drawable_is_rgb (drawable_id);
+  color_image = gimp_drawable_is_rgb(drawable_id);
 
-  curl_layer =
-    gimp_drawable_get (gimp_layer_new (image_id,
-				       _("Curl Layer"),
-				       true_sel_width,
-				       true_sel_height,
-				       color_image ?
-                                       GIMP_RGBA_IMAGE : GIMP_GRAYA_IMAGE,
-				       100, GIMP_NORMAL_MODE));
+  curl_layer = gimp_drawable_get(gimp_layer_new(image_id, _("Curl Layer"), true_sel_width,
+    true_sel_height, color_image ? GIMP_RGBA_IMAGE : GIMP_GRAYA_IMAGE, 100, GIMP_NORMAL_MODE));
 
   curl_layer_id = curl_layer->drawable_id;
 
-  gimp_image_add_layer (image_id, curl_layer->drawable_id, drawable_position);
-  gimp_drawable_fill (curl_layer->drawable_id, GIMP_TRANSPARENT_FILL);
+  gimp_image_add_layer(image_id, curl_layer->drawable_id, drawable_position);
+  gimp_drawable_fill(curl_layer->drawable_id, GIMP_TRANSPARENT_FILL);
 
-  gimp_drawable_offsets (drawable_id, &x1, &y1);
-  gimp_layer_set_offsets (curl_layer->drawable_id, sel_x1 + x1, sel_y1 + y1);
-  gimp_tile_cache_ntiles (2 * (curl_layer->width / gimp_tile_width () + 1));
+  gimp_drawable_offsets(drawable_id, &x1, &y1);
+  gimp_layer_set_offsets(curl_layer->drawable_id, sel_x1 + x1, sel_y1 + y1);
+  gimp_tile_cache_ntiles(2*(curl_layer->width/gimp_tile_width() + 1));
 
-  gimp_pixel_rgn_init (&dest_rgn, curl_layer,
-		       0, 0, true_sel_width, true_sel_height, TRUE, TRUE);
+  gimp_pixel_rgn_init(&dest_rgn, curl_layer, 0, 0, true_sel_width, true_sel_height, TRUE, TRUE);
 
-  /* Init shade_under */
-  gimp_vector2_set (&dl, -sel_width, -sel_height);
-  dl_mag = gimp_vector2_length (&dl);
-  gimp_vector2_set (&dr,
-		    -(sel_width - right_tangent.x),
-		    -(sel_height - right_tangent.y));
-  dr_mag = gimp_vector2_length (&dr);
-  alpha = acos (gimp_vector2_inner_product (&dl, &dr) / (dl_mag * dr_mag));
-  beta = alpha / 2;
+  // Init shade_under
+  gimp_vector2_set(&dl, -sel_width, -sel_height);
+  dl_mag = gimp_vector2_length(&dl);
+  gimp_vector2_set(&dr, -(sel_width - right_tangent.x), -(sel_height - right_tangent.y));
+  dr_mag = gimp_vector2_length(&dr);
+  alpha = acos(gimp_vector2_inner_product(&dl, &dr)/(dl_mag*dr_mag));
+  //beta = alpha / 2;
 
-  /* Init shade_curl */
+  // Init shade_curl
+  fore_grayval = GIMP_RGB_LUMINANCE(fore_color[0], fore_color[1], fore_color[2]) + 0.5;
+  back_grayval = GIMP_RGB_LUMINANCE (back_color[0], back_color[1], back_color[2]) + 0.5;
 
-  fore_grayval = GIMP_RGB_LUMINANCE (fore_color[0],
-                                     fore_color[1],
-                                     fore_color[2]) + 0.5;
-  back_grayval = GIMP_RGB_LUMINANCE (back_color[0],
-                                     back_color[1],
-                                     back_color[2]) + 0.5;
+  // Gradient Samples
+  switch(curl.colors)
+  {
+  case CURL_COLORS_FG_BG:
+  break;
+  case CURL_COLORS_GRADIENT:
+    grad_samples = get_gradient_samples(curl_layer->drawable_id, FALSE);
+    break;
+  case CURL_COLORS_GRADIENT_REVERSE:
+    grad_samples = get_gradient_samples(curl_layer->drawable_id, TRUE);
+    break;
+  }
 
-  /* Gradient Samples */
-  switch (curl.colors)
-    {
-    case CURL_COLORS_FG_BG:
-      break;
-    case CURL_COLORS_GRADIENT:
-      grad_samples = get_gradient_samples (curl_layer->drawable_id, FALSE);
-      break;
-    case CURL_COLORS_GRADIENT_REVERSE:
-      grad_samples = get_gradient_samples (curl_layer->drawable_id, TRUE);
-      break;
-    }
-
-  max_progress = 2 * sel_width * sel_height;
+  max_progress = 2*sel_width*sel_height;
   progress = 0;
 
   alpha_pos = dest_rgn.bpp - 1;
 
-  /* Main loop */
-  for (pr = gimp_pixel_rgns_register (1, &dest_rgn);
-       pr != NULL;
-       pr = gimp_pixel_rgns_process (pr))
+  // Main loop
+  for(pr = gimp_pixel_rgns_register(1, &dest_rgn); pr != NULL; pr = gimp_pixel_rgns_process(pr))
+  {
+    dest = dest_rgn.data;
+
+    for(y1 = dest_rgn.y; y1 < dest_rgn.y + dest_rgn.h; y1++)
     {
-      dest = dest_rgn.data;
+      pp = dest;
+      for(x1 = dest_rgn.x; x1 < dest_rgn.x + dest_rgn.w; x1++)
+      {
+        // Map coordinates to get the curl correct...
+        switch(curl.orientation)
+        {
+        case CURL_ORIENTATION_VERTICAL:
+          x = CURL_EDGE_RIGHT(curl.edge) ? x1 : sel_width - 1 - x1;
+          y = CURL_EDGE_UPPER(curl.edge) ? y1 : sel_height - 1 - y1;
+          break;
+        case CURL_ORIENTATION_HORIZONTAL:
+          x = CURL_EDGE_LOWER(curl.edge) ? y1 : sel_width - 1 - y1;
+          y = CURL_EDGE_LEFT(curl.edge) ? x1 : sel_height - 1 - x1;
+          break;
+        }
 
-      for (y1 = dest_rgn.y; y1 < dest_rgn.y + dest_rgn.h; y1++)
-	{
-	  pp = dest;
-	  for (x1 = dest_rgn.x; x1 < dest_rgn.x + dest_rgn.w; x1++)
-	    {
-	      /* Map coordinates to get the curl correct... */
-              switch (curl.orientation)
-                {
-                case CURL_ORIENTATION_VERTICAL:
-		  x = CURL_EDGE_RIGHT (curl.edge) ? x1 : sel_width  - 1 - x1;
-		  y = CURL_EDGE_UPPER (curl.edge) ? y1 : sel_height - 1 - y1;
-                  break;
+        if(left_of_diagl(x, y))
+        { // uncurled region
+          for(k = 0; k <= alpha_pos; k++) pp[k] = 0;
+        }
+        else if(right_of_diagr (x, y) || (right_of_diagm (x, y) && below_diagb (x, y) && !inside_circle (x, y)))
+        {
+          // curled region
+          for(k = 0; k <= alpha_pos; k++) pp[k] = 0;
+        }
+        else
+        {
+          v.x = -(sel_width - x);
+          v.y = -(sel_height - y);
+          angle = acos(gimp_vector2_inner_product(&v, &dl)/(gimp_vector2_length(&v)*dl_mag));
 
-                case CURL_ORIENTATION_HORIZONTAL:
-                  x = CURL_EDGE_LOWER (curl.edge) ? y1 : sel_width  - 1 - y1;
-		  y = CURL_EDGE_LEFT  (curl.edge) ? x1 : sel_height - 1 - x1;
-                  break;
-		}
+          if(inside_circle(x, y) || below_diagb(x, y))
+          {
+            // Below the curl.
+            factor = angle/alpha;
+            for(k = 0; k < alpha_pos; k++) pp[k] = 0;
 
-	      if (left_of_diagl (x, y))
-		{ /* uncurled region */
-		  for (k = 0; k <= alpha_pos; k++)
-		    pp[k] = 0;
-		}
-	      else if (right_of_diagr (x, y) ||
-		       (right_of_diagm (x, y) &&
-			below_diagb (x, y) &&
-			!inside_circle (x, y)))
-		{
-		  /* curled region */
-		  for (k = 0; k <= alpha_pos; k++)
-		    pp[k] = 0;
-		}
-	      else
-		{
-		  v.x = -(sel_width - x);
-		  v.y = -(sel_height - y);
-		  angle = acos (gimp_vector2_inner_product (&v, &dl) /
-				(gimp_vector2_length (&v) * dl_mag));
+            pp[alpha_pos] = (curl.shade ? (guchar)((float)255*(float)factor) : 0);
+          }
+          else
+          {
+            // On the curl
+            switch(curl.colors)
+            {
+            case CURL_COLORS_FG_BG:
+              intensity = pow(sin(G_PI*angle/alpha), 1.5);
+              if(color_image)
+              {
+                pp[0] = (intensity*back_color[0] + (1.0 - intensity)*fore_color[0]);
+                pp[1] = (intensity*back_color[1] + (1.0 - intensity)*fore_color[1]);
+                pp[2] = (intensity*back_color[2] + (1.0 - intensity)*fore_color[2]);
+              }
+              else
+                pp[0] = (intensity*back_grayval + (1 - intensity)*fore_grayval);
 
-		  if (inside_circle (x, y) || below_diagb (x, y))
-		    {
-		      /* Below the curl. */
-		      factor = angle / alpha;
-		      for (k = 0; k < alpha_pos; k++)
-			pp[k] = 0;
+              pp[alpha_pos] = (guchar)((double)255.99*(1.0 - intensity*(1.0 - curl.opacity)));
+              break;
+            case CURL_COLORS_GRADIENT:
+            case CURL_COLORS_GRADIENT_REVERSE:
+              // Calculate position in Gradient
+              intensity = (angle/alpha) + sin(G_PI*2*angle/alpha)*0.075;
 
-		      pp[alpha_pos] = (curl.shade ?
-                                       (guchar) ((float) 255 * (float) factor) :
-                                       0);
-		    }
-		  else
-		    {
-		      /* On the curl */
-                      switch (curl.colors)
-                        {
-                        case CURL_COLORS_FG_BG:
-			  intensity = pow (sin (G_PI * angle / alpha), 1.5);
-			  if (color_image)
-			    {
-			      pp[0] = (intensity * back_color[0] +
-                                       (1.0 - intensity) * fore_color[0]);
-			      pp[1] = (intensity * back_color[1] +
-                                       (1.0 - intensity) * fore_color[1]);
-			      pp[2] = (intensity * back_color[2] +
-                                       (1.0 - intensity) * fore_color[2]);
-			    }
-			  else
-			    pp[0] = (intensity * back_grayval +
-                                     (1 - intensity) * fore_grayval);
+              // Check boundaries
+              intensity = CLAMP(intensity, 0.0, 1.0);
+              gradsamp = (grad_samples + ((guint)(intensity*NGRADSAMPLES))*dest_rgn.bpp);
 
-			  pp[alpha_pos] = (guchar) ((double) 255.99 *
-                                                    (1.0 - intensity *
-                                                     (1.0 - curl.opacity)));
-                          break;
+              if(color_image)
+              {
+                pp[0] = gradsamp[0];
+                pp[1] = gradsamp[1];
+                pp[2] = gradsamp[2];
+              }
+              else
+                pp[0] = gradsamp[0];
 
-                        case CURL_COLORS_GRADIENT:
-                        case CURL_COLORS_GRADIENT_REVERSE:
-			  /* Calculate position in Gradient */
-                          intensity =
-                            (angle/alpha) + sin (G_PI*2 * angle/alpha) * 0.075;
-
-			  /* Check boundaries */
-			  intensity = CLAMP (intensity, 0.0, 1.0);
-			  gradsamp  = (grad_samples +
-                                       ((guint) (intensity * NGRADSAMPLES)) *
-                                       dest_rgn.bpp);
-
-			  if (color_image)
-			    {
-			      pp[0] = gradsamp[0];
-			      pp[1] = gradsamp[1];
-			      pp[2] = gradsamp[2];
-			    }
-			  else
-			    pp[0] = gradsamp[0];
-
-			  pp[alpha_pos] =
-                            (guchar) ((double) gradsamp[alpha_pos] *
-                                      (1.0 - intensity * (1.0 - curl.opacity)));
-                          break;
-                        }
-		    }
-		}
-	      pp += dest_rgn.bpp;
-	    }
-	  dest += dest_rgn.rowstride;
-	}
-      progress += dest_rgn.w * dest_rgn.h;
-      gimp_progress_update ((double) progress / (double) max_progress);
+              pp[alpha_pos] = (guchar)((double)gradsamp[alpha_pos]*(1.0 - intensity*(1.0 - curl.opacity)));
+              break;
+            }
+          }
+        }
+        pp += dest_rgn.bpp;
+      }
+      dest += dest_rgn.rowstride;
     }
+    progress += dest_rgn.w*dest_rgn.h;
+    gimp_progress_update((double)progress/(double)max_progress);
+  }
 
-  gimp_drawable_flush (curl_layer);
-  gimp_drawable_merge_shadow (curl_layer->drawable_id, FALSE);
-  gimp_drawable_update (curl_layer->drawable_id,
-			0, 0, curl_layer->width, curl_layer->height);
-  gimp_drawable_detach (curl_layer);
+  gimp_drawable_flush(curl_layer);
+  gimp_drawable_merge_shadow(curl_layer->drawable_id, FALSE);
+  gimp_drawable_update(curl_layer->drawable_id, 0, 0, curl_layer->width, curl_layer->height);
+  gimp_drawable_detach(curl_layer);
 
-  g_free (grad_samples);
+  g_free(grad_samples);
 
   return curl_layer_id;
 }
@@ -1081,3 +1041,4 @@ get_gradient_samples (gint32    drawable_id,
 
   return b_samples;
 }
+

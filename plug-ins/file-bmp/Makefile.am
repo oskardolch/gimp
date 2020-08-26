@@ -24,7 +24,7 @@ file_bmp_SOURCES = \
 	bmp-read.c	\
 	bmp-write.c
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

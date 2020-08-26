@@ -43,45 +43,42 @@ static GfigObject *d_copy_ellipse   (GfigObject *obj);
 
 static void        d_update_ellipse (GdkPoint   *pnt);
 
-static void
-d_draw_ellipse (GfigObject * obj)
+static void d_draw_ellipse(GfigObject * obj)
 {
   DobjPoints *center_pnt;
   DobjPoints *edge_pnt;
   gint        bound_wx;
   gint        bound_wy;
-  gint        top_x;
-  gint        top_y;
+  //gint        top_x;
+  //gint        top_y;
 
   center_pnt = obj->points;
 
-  if (!center_pnt)
-    return; /* End-of-line */
+  if(!center_pnt)
+    return; // End-of-line
 
   edge_pnt = center_pnt->next;
 
-  if (!edge_pnt)
-    {
-      g_warning ("Internal error - ellipse no edge pnt");
-    }
+  if(!edge_pnt)
+  {
+    g_warning("Internal error - ellipse no edge pnt");
+  }
 
-  draw_sqr (&center_pnt->pnt, obj == gfig_context->selected_obj);
-  draw_sqr (&edge_pnt->pnt, obj == gfig_context->selected_obj);
+  draw_sqr(&center_pnt->pnt, obj == gfig_context->selected_obj);
+  draw_sqr(&edge_pnt->pnt, obj == gfig_context->selected_obj);
 
-  bound_wx = abs (center_pnt->pnt.x - edge_pnt->pnt.x);
-  bound_wy = abs (center_pnt->pnt.y - edge_pnt->pnt.y);
+  bound_wx = abs(center_pnt->pnt.x - edge_pnt->pnt.x);
+  bound_wy = abs(center_pnt->pnt.y - edge_pnt->pnt.y);
 
-  if (edge_pnt->pnt.x > center_pnt->pnt.x)
-    top_x = 2 * center_pnt->pnt.x - edge_pnt->pnt.x;
-  else
-    top_x = edge_pnt->pnt.x;
+  //if(edge_pnt->pnt.x > center_pnt->pnt.x)
+  //  top_x = 2*center_pnt->pnt.x - edge_pnt->pnt.x;
+  //else top_x = edge_pnt->pnt.x;
 
-  if (edge_pnt->pnt.y > center_pnt->pnt.y)
-    top_y = 2 * center_pnt->pnt.y - edge_pnt->pnt.y;
-  else
-    top_y = edge_pnt->pnt.y;
+  //if(edge_pnt->pnt.y > center_pnt->pnt.y)
+  //  top_y = 2*center_pnt->pnt.y - edge_pnt->pnt.y;
+  //else top_y = edge_pnt->pnt.y;
 
-  gfig_draw_arc (center_pnt->pnt.x, center_pnt->pnt.y, bound_wx, bound_wy, 0, 360);
+  gfig_draw_arc(center_pnt->pnt.x, center_pnt->pnt.y, bound_wx, bound_wy, 0, 360);
 }
 
 static void

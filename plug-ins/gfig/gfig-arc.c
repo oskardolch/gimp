@@ -178,19 +178,13 @@ line_definition (gdouble  x1,
   *lconst = line_cons (midx, midy,*lgrad);
 }
 
-/* Arch details
- * Given three points get arc radius and the co-ords
- * of center point.
- */
-
-static void
-arc_details (GdkPoint *vert_a,
-             GdkPoint *vert_b,
-             GdkPoint *vert_c,
-             GdkPoint *center_pnt,
-             gdouble  *radius)
+// Arch details
+// Given three points get arc radius and the co-ords
+// of center point.
+static void arc_details(GdkPoint *vert_a, GdkPoint *vert_b, GdkPoint *vert_c,
+  GdkPoint *center_pnt, gdouble *radius)
 {
-  /* Only vertices are in whole numbers - everything else is in doubles */
+  // Only vertices are in whole numbers - everything else is in doubles
   double ax, ay;
   double bx, by;
   double cx, cy;
@@ -199,135 +193,115 @@ arc_details (GdkPoint *vert_a,
   double sum_sides2;
   double area;
   double circumcircle_R;
-  double line1_grad, line1_const;
-  double line2_grad, line2_const;
+  double line1_grad = 0.0, line1_const = 0.0;
+  double line2_grad = 0.0, line2_const = 0.0;
   double inter_x = 0.0, inter_y = 0.0;
   int    got_x = 0, got_y = 0;
 
-  ax = (double) (vert_a->x);
-  ay = (double) (vert_a->y);
-  bx = (double) (vert_b->x);
-  by = (double) (vert_b->y);
-  cx = (double) (vert_c->x);
-  cy = (double) (vert_c->y);
+  ax = (double)(vert_a->x);
+  ay = (double)(vert_a->y);
+  bx = (double)(vert_b->x);
+  by = (double)(vert_b->y);
+  cx = (double)(vert_c->x);
+  cy = (double)(vert_c->y);
 
-  len_a = dist (ax, ay, bx, by);
-  len_b = dist (bx, by, cx, cy);
-  len_c = dist (cx, cy, ax, ay);
+  len_a = dist(ax, ay, bx, by);
+  len_b = dist(bx, by, cx, cy);
+  len_c = dist(cx, cy, ax, ay);
 
-  sum_sides2 = (fabs (len_a) + fabs (len_b) + fabs (len_c))/2;
+  sum_sides2 = (fabs(len_a) + fabs(len_b) + fabs(len_c))/2;
 
-  /* Area */
-  area = sqrt (sum_sides2 * (sum_sides2 - len_a) *
-                            (sum_sides2 - len_b) *
-                            (sum_sides2 - len_c));
+  // Area
+  area = sqrt(sum_sides2*(sum_sides2 - len_a)*(sum_sides2 - len_b)*(sum_sides2 - len_c));
 
-  /* Circumcircle */
-  circumcircle_R = len_a * len_b * len_c / (4 * area);
+  // Circumcircle
+  circumcircle_R = len_a*len_b*len_c/(4*area);
   *radius = circumcircle_R;
 
-  /* Deal with exceptions - I hate exceptions */
-
-  if (ax == bx || ax == cx || cx == bx)
+  // Deal with exceptions - I hate exceptions
+  if(ax == bx || ax == cx || cx == bx)
+  {
+    // vert line -> mid point gives inter_x
+    if(ax == bx && bx == cx)
     {
-      /* vert line -> mid point gives inter_x */
-      if (ax == bx && bx == cx)
-        {
-          /* Straight line */
-          double miny = ay;
-          double maxy = ay;
+      // Straight line
+      double miny = ay;
+      double maxy = ay;
 
-          if (by > maxy)
-            maxy = by;
+      if(by > maxy) maxy = by;
+      if(by < miny) miny = by;
+      if(cy > maxy) maxy = cy;
+      if(cy < miny) miny = cy;
 
-          if (by < miny)
-            miny = by;
-
-          if (cy > maxy)
-            maxy = cy;
-
-          if (cy < miny)
-            miny = cy;
-
-          inter_y = (maxy - miny) / 2 + miny;
-        }
-      else if (ax == bx)
-        {
-          inter_y = (ay - by) / 2 + by;
-        }
-      else if (bx == cx)
-        {
-          inter_y = (by - cy) / 2 + cy;
-        }
-      else
-        {
-          inter_y = (cy - ay) / 2 + ay;
-        }
-      got_y = 1;
+      inter_y = (maxy - miny)/2 + miny;
     }
-
-  if (ay == by || by == cy || ay == cy)
+    else if(ax == bx)
     {
-      /* Horz line -> midpoint gives inter_y */
-      if (ax == bx && bx == cx)
-        {
-          /* Straight line */
-          double minx = ax;
-          double maxx = ax;
-
-          if (bx > maxx)
-            maxx = bx;
-
-          if (bx < minx)
-            minx = bx;
-
-          if (cx > maxx)
-            maxx = cx;
-
-          if (cx < minx)
-            minx = cx;
-
-          inter_x = (maxx - minx) / 2 + minx;
-        }
-      else if (ay == by)
-        {
-          inter_x = (ax - bx) / 2 + bx;
-        }
-      else if (by == cy)
-        {
-          inter_x = (bx - cx) / 2 + cx;
-        }
-      else
-        {
-          inter_x = (cx - ax) / 2 + ax;
-        }
-      got_x = 1;
+      inter_y = (ay - by)/2 + by;
     }
-
-  if (!got_x || !got_y)
+    else if(bx == cx)
     {
-      /* At least two of the lines are not parallel to the axis */
-      /*first line */
-      if (ax != bx && ay != by)
-        line_definition (ax, ay, bx, by, &line1_grad, &line1_const);
-      else
-        line_definition (ax, ay, cx, cy, &line1_grad, &line1_const);
-      /* second line */
-      if (bx != cx && by != cy)
-        line_definition (bx, by, cx, cy, &line2_grad, &line2_const);
-      else
-        line_definition (ax, ay, cx, cy, &line2_grad, &line2_const);
+      inter_y = (by - cy)/2 + cy;
     }
+    else
+    {
+      inter_y = (cy - ay)/2 + ay;
+    }
+    got_y = 1;
+  }
 
-  /* Intersection point */
+  if(ay == by || by == cy || ay == cy)
+  {
+    // Horz line -> midpoint gives inter_y
+    if(ax == bx && bx == cx)
+    {
+      // Straight line
+      double minx = ax;
+      double maxx = ax;
 
-  if (!got_x)
-    inter_x = (line2_const - line1_const) / (line1_grad - line2_grad);
-  if (!got_y)
-    inter_y = line1_grad * inter_x + line1_const;
+      if(bx > maxx) maxx = bx;
+      if(bx < minx) minx = bx;
+      if(cx > maxx) maxx = cx;
+      if(cx < minx) minx = cx;
 
-  center_pnt->x = (gint) inter_x;
-  center_pnt->y = (gint) inter_y;
+      inter_x = (maxx - minx)/2 + minx;
+    }
+    else if(ay == by)
+    {
+      inter_x = (ax - bx)/2 + bx;
+    }
+    else if(by == cy)
+    {
+      inter_x = (bx - cx)/2 + cx;
+    }
+    else
+    {
+      inter_x = (cx - ax)/2 + ax;
+    }
+    got_x = 1;
+  }
+
+  if(!got_x || !got_y)
+  {
+    // At least two of the lines are not parallel to the axis
+    // first line
+    if(ax != bx && ay != by)
+      line_definition(ax, ay, bx, by, &line1_grad, &line1_const);
+    else
+      line_definition(ax, ay, cx, cy, &line1_grad, &line1_const);
+    // second line
+    if(bx != cx && by != cy)
+      line_definition(bx, by, cx, cy, &line2_grad, &line2_const);
+    else
+      line_definition(ax, ay, cx, cy, &line2_grad, &line2_const);
+  }
+
+  // Intersection point
+  if(!got_x) inter_x = (line2_const - line1_const)/(line1_grad - line2_grad);
+  if(!got_y) inter_y = line1_grad*inter_x + line1_const;
+
+  center_pnt->x = (gint)inter_x;
+  center_pnt->y = (gint)inter_y;
 }
 
 static gdouble
@@ -456,11 +430,10 @@ d_draw_arc (GfigObject *obj)
   gfig_draw_arc (center_pnt.x, center_pnt.y, radius, radius, minang, arcang);
 }
 
-static void
-d_paint_arc (GfigObject *obj)
+static void d_paint_arc(GfigObject *obj)
 {
-  /* first point center */
-  /* Next point is radius */
+  // first point center
+  // Next point is radius
   gdouble *line_pnts;
   gint     seg_count = 0;
   gint     i = 0;
@@ -468,79 +441,75 @@ d_paint_arc (GfigObject *obj)
   gdouble  ang_loop;
   gdouble  radius;
   gint     loop;
-  GdkPoint first_pnt, last_pnt = { 0, 0 };
+  GdkPoint last_pnt = { 0, 0 }; // first_pnt
   gboolean first = TRUE;
   GdkPoint center_pnt;
   gdouble  minang, arcang;
 
-  g_assert (obj != NULL);
+  g_assert(obj != NULL);
 
-  if (!obj)
-    return;
+  if(!obj) return;
 
-  /* No cnt pnts & must scale */
-  arc_drawing_details (obj, &minang, &center_pnt, &arcang, &radius,
-                       FALSE, TRUE);
+  // No cnt pnts & must scale
+  arc_drawing_details(obj, &minang, &center_pnt, &arcang, &radius, FALSE, TRUE);
 
-  seg_count = 360; /* Should make a smoth-ish curve */
+  seg_count = 360; // Should make a smoth-ish curve
 
-  /* +3 because we MIGHT do pie selection */
-  line_pnts = g_new0 (gdouble, 2 * seg_count + 3);
+  // +3 because we MIGHT do pie selection
+  line_pnts = g_new0(gdouble, 2*seg_count + 3);
 
-  /* Lines */
-  ang_grid = 2.0 * G_PI / 360.0;
+  // Lines
+  ang_grid = 2.0*G_PI/360.0;
 
-  if (arcang < 0.0)
+  if(arcang < 0.0)
+  {
+    // Swap - since we always draw anti-clock wise
+    minang += arcang;
+    arcang  = -arcang;
+  }
+
+  minang = minang*(2.0*G_PI/360.0); // min ang is in degrees - need in rads
+
+  for(loop = 0; loop < abs((gint)arcang); loop++)
+  {
+    gdouble  lx, ly;
+    GdkPoint calc_pnt;
+
+    ang_loop = (gdouble)loop*ang_grid + minang;
+
+    lx =  radius*cos(ang_loop);
+    ly = -radius*sin(ang_loop); // y grows down screen and angs measured from x clockwise
+
+    calc_pnt.x = RINT(lx + center_pnt.x);
+    calc_pnt.y = RINT(ly + center_pnt.y);
+
+    // Miss out duped pnts
+    if(!first)
     {
-      /* Swap - since we always draw anti-clock wise */
-      minang += arcang;
-      arcang  = -arcang;
+      if(calc_pnt.x == last_pnt.x && calc_pnt.y == last_pnt.y)
+      {
+        continue;
+      }
     }
 
-  minang = minang * (2.0 * G_PI / 360.0); /* min ang is in degrees - need in rads */
+    line_pnts[i++] = calc_pnt.x;
+    line_pnts[i++] = calc_pnt.y;
+    last_pnt = calc_pnt;
 
-  for (loop = 0 ; loop < abs ((gint)arcang) ; loop++)
+    if(first)
     {
-      gdouble  lx, ly;
-      GdkPoint calc_pnt;
-
-      ang_loop = (gdouble)loop * ang_grid + minang;
-
-      lx =  radius * cos (ang_loop);
-      ly = -radius * sin (ang_loop); /* y grows down screen and angs measured from x clockwise */
-
-      calc_pnt.x = RINT (lx + center_pnt.x);
-      calc_pnt.y = RINT (ly + center_pnt.y);
-
-      /* Miss out duped pnts */
-      if (!first)
-        {
-          if (calc_pnt.x == last_pnt.x && calc_pnt.y == last_pnt.y)
-            {
-              continue;
-            }
-        }
-
-      line_pnts[i++] = calc_pnt.x;
-      line_pnts[i++] = calc_pnt.y;
-      last_pnt = calc_pnt;
-
-      if (first)
-        {
-          first_pnt = calc_pnt;
-          first = FALSE;
-        }
+      //first_pnt = calc_pnt;
+      first = FALSE;
     }
+  }
 
-  /* One go */
-  if (obj->style.paint_type == PAINT_BRUSH_TYPE)
-    {
-      gfig_paint (selvals.brshtype,
-                  gfig_context->drawable_id,
-                  i, line_pnts);
-    }
+  // One go
+  if(obj->style.paint_type == PAINT_BRUSH_TYPE)
+  {
+    gfig_paint(selvals.brshtype, gfig_context->drawable_id, i, line_pnts);
+  }
 
-  g_free (line_pnts);
+  g_free(line_pnts);
 }
 
 static GfigObject *

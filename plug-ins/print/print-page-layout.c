@@ -801,76 +801,66 @@ print_size_info_set_resolution (PrintSizeInfo *info,
                                        offset_x_max, offset_y_max);
 }
 
-static void
-print_size_info_set_page_setup (PrintSizeInfo *info)
+static void print_size_info_set_page_setup(PrintSizeInfo *info)
 {
-  GtkPageSetup *setup;
+  //GtkPageSetup *setup;
   PrintData    *data = info->data;
   gdouble       page_width;
   gdouble       page_height;
   gdouble       x;
   gdouble       y;
 
-  setup = gtk_print_operation_get_default_page_setup (data->operation);
+  //setup =
+  gtk_print_operation_get_default_page_setup(data->operation);
 
-  print_size_info_get_page_dimensions (info,
-                                       &page_width, &page_height,
-                                       GTK_UNIT_INCH);
+  print_size_info_get_page_dimensions(info, &page_width, &page_height, GTK_UNIT_INCH);
 
-  page_width  *= gimp_unit_get_factor (data->unit);
-  page_height *= gimp_unit_get_factor (data->unit);
+  page_width  *= gimp_unit_get_factor(data->unit);
+  page_height *= gimp_unit_get_factor(data->unit);
 
-  if (info->area_label)
-    {
-      gchar *format;
-      gchar *text;
+  if(info->area_label)
+  {
+    gchar *format;
+    gchar *text;
 
-      format = g_strdup_printf ("%%.%df x %%.%df %s",
-                                gimp_unit_get_digits (data->unit),
-                                gimp_unit_get_digits (data->unit),
-                                gimp_unit_get_plural (data->unit));
-      text = g_strdup_printf (format, page_width, page_height);
-      g_free (format);
+    format = g_strdup_printf("%%.%df x %%.%df %s", gimp_unit_get_digits (data->unit),
+      gimp_unit_get_digits (data->unit), gimp_unit_get_plural (data->unit));
+    text = g_strdup_printf(format, page_width, page_height);
+    g_free(format);
 
-      gtk_label_set_text (GTK_LABEL (info->area_label), text);
-      g_free (text);
-    }
+    gtk_label_set_text(GTK_LABEL(info->area_label), text);
+    g_free(text);
+  }
 
   x = page_width;
   y = page_height;
 
-  if (info->chain && gimp_chain_button_get_active (info->chain))
-    {
-      gdouble ratio_x = page_width  / (gdouble) info->image_width;
-      gdouble ratio_y = page_height / (gdouble) info->image_height;
+  if(info->chain && gimp_chain_button_get_active(info->chain))
+  {
+    gdouble ratio_x = page_width/(gdouble)info->image_width;
+    gdouble ratio_y = page_height/(gdouble)info->image_height;
 
-      if (ratio_x < ratio_y)
-        y = (gdouble) info->image_height * ratio_x;
-      else
-        x = (gdouble) info->image_width  * ratio_y;
-    }
+    if(ratio_x < ratio_y)
+      y = (gdouble)info->image_height*ratio_x;
+    else
+      x = (gdouble)info->image_width*ratio_y;
+  }
 
-  gimp_size_entry_set_value_boundaries (info->size_entry, WIDTH,
-                                        page_width  / 100.0, x);
-  gimp_size_entry_set_value_boundaries (info->size_entry, HEIGHT,
-                                        page_height / 100.0, y);
+  gimp_size_entry_set_value_boundaries(info->size_entry, WIDTH, page_width/100.0, x);
+  gimp_size_entry_set_value_boundaries(info->size_entry, HEIGHT, page_height/100.0, y);
 
-  print_size_info_get_page_dimensions (info,
-                                       &page_width, &page_height,
-                                       GTK_UNIT_POINTS);
+  print_size_info_get_page_dimensions(info, &page_width, &page_height, GTK_UNIT_POINTS);
 
-  x = (gdouble) info->image_width  / page_width  * 72.0;
-  y = (gdouble) info->image_height / page_height * 72.0;
+  x = (gdouble)info->image_width/page_width*72.0;
+  y = (gdouble)info->image_height/page_height*72.0;
 
-  if (info->chain && gimp_chain_button_get_active (info->chain))
-    {
-      gdouble max = MAX (x, y);
+  if(info->chain && gimp_chain_button_get_active(info->chain))
+  {
+    gdouble max = MAX(x, y);
+    x = y = max;
+  }
 
-      x = y = max;
-    }
-
-  gimp_size_entry_set_refval_boundaries (info->resolution_entry, 0,
-                                         x, GIMP_MAX_RESOLUTION);
-  gimp_size_entry_set_refval_boundaries (info->resolution_entry, 1,
-                                         y, GIMP_MAX_RESOLUTION);
+  gimp_size_entry_set_refval_boundaries(info->resolution_entry, 0, x, GIMP_MAX_RESOLUTION);
+  gimp_size_entry_set_refval_boundaries(info->resolution_entry, 1, y, GIMP_MAX_RESOLUTION);
 }
+

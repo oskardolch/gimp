@@ -82,9 +82,7 @@ endif
 
 AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"Gimp\"		\
-	-DGIMP_APP_GLUE_COMPILATION
-
-INCLUDES = \
+	-DGIMP_APP_GLUE_COMPILATION \
 	-I$(top_srcdir)		\
 	$(GTK_CFLAGS)		\
 	$(PANGOFT2_CFLAGS)	\

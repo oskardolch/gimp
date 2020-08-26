@@ -597,12 +597,12 @@ static void
 noisify_double_adjustment_update (GtkAdjustment *adjustment,
                                   gpointer       data)
 {
-  GimpDrawable *drawable;
+  //GimpDrawable *drawable;
   gint          n;
 
   gimp_double_adjustment_update (adjustment, data);
 
-  drawable = g_object_get_data (G_OBJECT (adjustment), "drawable");
+  //drawable = g_object_get_data (G_OBJECT (adjustment), "drawable");
 
   if (! nvals.independent)
     {

@@ -343,105 +343,88 @@ cylinder_constrain (gint32   image_id,
 /* Preview area event handler */
 /******************************/
 
-static gint
-preview_events (GtkWidget *area,
-		GdkEvent  *event)
+static gint preview_events(GtkWidget *area,	GdkEvent *event)
 {
-  HVect pos;
-/*  HMatrix RotMat;
-  gdouble a,b,c; */
+  //HVect pos;
+  //HMatrix RotMat;
+  //gdouble a, b, c;
 
-  switch (event->type)
+  switch(event->type)
+  {
+  case GDK_EXPOSE:
+    // Is this the first exposure?
+    if(!gc)
     {
-      case GDK_EXPOSE:
-
-        /* Is this the first exposure? */
-        /* =========================== */
-
-        if (!gc)
-          {
-            gc = gdk_gc_new (area->window);
-            draw_preview_image (TRUE);
-          }
-        else
-          {
-            draw_preview_image (FALSE);
-            if (mapvals.showgrid == 1 && linetab[0].x1 != -1)
-              draw_preview_wireframe ();
-          }
-        break;
-
-      case GDK_ENTER_NOTIFY:
-        break;
-
-      case GDK_LEAVE_NOTIFY:
-        break;
-
-      case GDK_BUTTON_PRESS:
-        light_hit = check_light_hit (event->button.x, event->button.y);
-        if (light_hit == FALSE)
-          {
-            pos.x = -(2.0 * (gdouble) event->button.x /
-		      (gdouble) PREVIEW_WIDTH - 1.0);
-            pos.y = (2.0 * (gdouble) event->button.y /
-		     (gdouble) PREVIEW_HEIGHT - 1.0);
-            /*ArcBall_Mouse(pos);
-            ArcBall_BeginDrag(); */
-          }
-        left_button_pressed = TRUE;
-        break;
-
-      case GDK_BUTTON_RELEASE:
-        if (light_hit == TRUE)
-	  {
-	    draw_preview_image (TRUE);
-	  }
-        else
-          {
-            pos.x = -(2.0 * (gdouble) event->button.x /
-		      (gdouble) PREVIEW_WIDTH - 1.0);
-            pos.y = (2.0 * (gdouble) event->button.y /
-		     (gdouble) PREVIEW_HEIGHT - 1.0);
-            /*ArcBall_Mouse(pos);
-            ArcBall_EndDrag(); */
-          }
-        left_button_pressed = FALSE;
-        break;
-
-      case GDK_MOTION_NOTIFY:
-        if (left_button_pressed == TRUE)
-          {
-            if (light_hit == TRUE)
-              {
-                update_light (event->motion.x, event->motion.y);
-                update_light_pos_entries ();
-              }
-            else
-              {
-            	pos.x = -(2.0 * (gdouble) event->motion.x /
-			  (gdouble) PREVIEW_WIDTH - 1.0);
-                pos.y = (2.0 * (gdouble) event->motion.y /
-			 (gdouble) PREVIEW_HEIGHT - 1.0);
-/*                ArcBall_Mouse(pos);
-                ArcBall_Update();
-                ArcBall_Values(&a,&b,&c);
-                Alpha+=RadToDeg(-a);
-                Beta+RadToDeg(-b);
-                Gamma+=RadToDeg(-c);
-                if (Alpha>180) Alpha-=360;
-                if (Alpha<-180) Alpha+=360;
-                if (Beta>180) Beta-=360;
-                if (Beta<-180) Beta+=360;
-                if (Gamma>180) Gamma-=360;
-                if (Gamma<-180) Gamma+=360;
-            	  UpdateAngleSliders(); */
-              }
-          }
-        break;
-
-      default:
-        break;
+      gc = gdk_gc_new(area->window);
+      draw_preview_image(TRUE);
     }
+    else
+    {
+      draw_preview_image(FALSE);
+      if(mapvals.showgrid == 1 && linetab[0].x1 != -1)
+        draw_preview_wireframe();
+    }
+    break;
+  case GDK_ENTER_NOTIFY:
+    break;
+  case GDK_LEAVE_NOTIFY:
+    break;
+  case GDK_BUTTON_PRESS:
+    light_hit = check_light_hit(event->button.x, event->button.y);
+    if(light_hit == FALSE)
+    {
+      //pos.x = -(2.0*(gdouble)event->button.x/(gdouble)PREVIEW_WIDTH - 1.0);
+      //pos.y = (2.0*(gdouble)event->button.y/(gdouble)PREVIEW_HEIGHT - 1.0);
+      //ArcBall_Mouse(pos);
+      //ArcBall_BeginDrag();
+    }
+    left_button_pressed = TRUE;
+    break;
+  case GDK_BUTTON_RELEASE:
+    if(light_hit == TRUE)
+    {
+      draw_preview_image(TRUE);
+    }
+    else
+    {
+      //pos.x = -(2.0*(gdouble)event->button.x/(gdouble)PREVIEW_WIDTH - 1.0);
+      //pos.y = (2.0*(gdouble)event->button.y/(gdouble)PREVIEW_HEIGHT - 1.0);
+      //ArcBall_Mouse(pos);
+      //ArcBall_EndDrag();
+    }
+    left_button_pressed = FALSE;
+    break;
+  case GDK_MOTION_NOTIFY:
+    if(left_button_pressed == TRUE)
+    {
+      if(light_hit == TRUE)
+      {
+        update_light(event->motion.x, event->motion.y);
+        update_light_pos_entries();
+      }
+      else
+      {
+        //pos.x = -(2.0*(gdouble)event->motion.x/(gdouble)PREVIEW_WIDTH - 1.0);
+        //pos.y = (2.0*(gdouble) event->motion.y/(gdouble)PREVIEW_HEIGHT - 1.0);
+        //ArcBall_Mouse(pos);
+        //ArcBall_Update();
+        //ArcBall_Values(&a,&b,&c);
+        //Alpha+=RadToDeg(-a);
+        //Beta+RadToDeg(-b);
+        //Gamma+=RadToDeg(-c);
+        //if(Alpha > 180) Alpha -= 360;
+        //if(Alpha < -180) Alpha += 360;
+        //if(Beta > 180) Beta -= 360;
+        //if(Beta < -180) Beta += 360;
+        //if(Gamma > 180) Gamma -= 360;
+        //if(Gamma < -180) Gamma += 360;
+        //UpdateAngleSliders();
+      }
+    }
+    break;
+  default:
+    break;
+  }
 
   return FALSE;
 }

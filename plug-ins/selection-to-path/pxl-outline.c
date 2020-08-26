@@ -219,40 +219,39 @@ append_outline_pixel (pixel_outline_type *o, coordinate_type c)
    If we're on a top edge, we use the upper-left hand corner; right edge
    => upper right; bottom edge => lower right; left edge => lower left.  */
 
-static void
-append_coordinate (pixel_outline_type *o, int x, int y, edge_type edge)
+static void append_coordinate(pixel_outline_type *o, int x, int y, edge_type edge)
 {
   coordinate_type c;
-  char * str;
+  //char *str;
 
   c.x = x;
   c.y = y;
 
-  switch (edge)
-    {
-    case top:
-      c.y++;
-      str = "top";
-      break;
+  switch(edge)
+  {
+  case top:
+    c.y++;
+    //str = "top";
+    break;
 
-    case right:
-      c.x++;
-      c.y++;
-      str = "right";
-      break;
+  case right:
+    c.x++;
+    c.y++;
+    //str = "right";
+    break;
 
-    case bottom:
-      c.x++;
-      str = "bottom";
-      break;
+  case bottom:
+    c.x++;
+    //str = "bottom";
+    break;
 
-    case left:
-      str = "left";
-      break;
+  case left:
+    //str = "left";
+    break;
 
-    default:
-      g_printerr ("append_coordinate: Bad edge (%d)", edge);
-    }
+  default:
+    g_printerr("append_coordinate: Bad edge (%d)", edge);
+  }
 
-  append_outline_pixel (o, c);
+  append_outline_pixel(o, c);
 }

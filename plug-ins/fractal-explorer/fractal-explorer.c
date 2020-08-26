@@ -254,15 +254,10 @@ query (void)
  FUNCTION: run
  *********************************************************************/
 
-static void
-run (const gchar      *name,
-     gint              nparams,
-     const GimpParam  *param,
-     gint             *nreturn_vals,
-     GimpParam       **return_vals)
+static void run(const gchar *name, gint nparams, const GimpParam *param, gint *nreturn_vals, GimpParam **return_vals)
 {
   static GimpParam   values[1];
-  gint32             image_ID;
+  //gint32             image_ID;
   GimpRunMode        run_mode;
   gint               pwidth;
   gint               pheight;
@@ -278,86 +273,80 @@ run (const gchar      *name,
   *nreturn_vals = 1;
   *return_vals = values;
 
-  INIT_I18N ();
+  INIT_I18N();
 
-  /*  Get the specified drawable  */
-  drawable = gimp_drawable_get (param[2].data.d_drawable);
-  image_ID = param[1].data.d_image;
+  // Get the specified drawable
+  drawable = gimp_drawable_get(param[2].data.d_drawable);
+  //image_ID = param[1].data.d_image;
 
-  gimp_drawable_mask_bounds (drawable->drawable_id,
-                             &sel_x1, &sel_y1, &sel_x2, &sel_y2);
+  gimp_drawable_mask_bounds(drawable->drawable_id, &sel_x1, &sel_y1, &sel_x2, &sel_y2);
 
   sel_width  = sel_x2 - sel_x1;
   sel_height = sel_y2 - sel_y1;
 
-  /* Calculate preview size */
-  if (sel_width > sel_height)
-    {
-      pwidth  = MIN (sel_width, PREVIEW_SIZE);
-      pheight = sel_height * pwidth / sel_width;
-    }
+  // Calculate preview size
+  if(sel_width > sel_height)
+  {
+    pwidth  = MIN(sel_width, PREVIEW_SIZE);
+    pheight = sel_height*pwidth/sel_width;
+  }
   else
+  {
+    pheight = MIN(sel_height, PREVIEW_SIZE);
+    pwidth  = sel_width*pheight/sel_height;
+  }
+
+  preview_width  = MAX(pwidth, 2);
+  preview_height = MAX(pheight, 2);
+
+  // See how we will run
+  switch(run_mode)
+  {
+  case GIMP_RUN_INTERACTIVE:
+    // Possibly retrieve data
+    gimp_get_data("plug_in_fractalexplorer", &wvals);
+
+    // Get information from the dialog
+    if(!explorer_dialog()) return;
+    break;
+  case GIMP_RUN_NONINTERACTIVE:
+    // Make sure all the arguments are present
+    if(nparams != 22)
     {
-      pheight = MIN (sel_height, PREVIEW_SIZE);
-      pwidth  = sel_width * pheight / sel_height;
+      status = GIMP_PDB_CALLING_ERROR;
     }
-
-  preview_width  = MAX (pwidth, 2);
-  preview_height = MAX (pheight, 2);
-
-  /* See how we will run */
-  switch (run_mode)
+    else
     {
-    case GIMP_RUN_INTERACTIVE:
-      /* Possibly retrieve data */
-      gimp_get_data ("plug_in_fractalexplorer", &wvals);
-
-      /* Get information from the dialog */
-      if (!explorer_dialog ())
-        return;
-
-      break;
-
-    case GIMP_RUN_NONINTERACTIVE:
-      /* Make sure all the arguments are present */
-      if (nparams != 22)
-        {
-          status = GIMP_PDB_CALLING_ERROR;
-        }
-      else
-        {
-          wvals.fractaltype  = param[3].data.d_int8;
-          wvals.xmin         = param[4].data.d_float;
-          wvals.xmax         = param[5].data.d_float;
-          wvals.ymin         = param[6].data.d_float;
-          wvals.ymax         = param[7].data.d_float;
-          wvals.iter         = param[8].data.d_float;
-          wvals.cx           = param[9].data.d_float;
-          wvals.cy           = param[10].data.d_float;
-          wvals.colormode    = param[11].data.d_int8;
-          wvals.redstretch   = param[12].data.d_float;
-          wvals.greenstretch = param[13].data.d_float;
-          wvals.bluestretch  = param[14].data.d_float;
-          wvals.redmode      = param[15].data.d_int8;
-          wvals.greenmode    = param[16].data.d_int8;
-          wvals.bluemode     = param[17].data.d_int8;
-          wvals.redinvert    = param[18].data.d_int8;
-          wvals.greeninvert  = param[19].data.d_int8;
-          wvals.blueinvert   = param[20].data.d_int8;
-          wvals.ncolors      = CLAMP (param[21].data.d_int32, 2, MAXNCOLORS);
-        }
-      make_color_map();
-      break;
-
-    case GIMP_RUN_WITH_LAST_VALS:
-      /* Possibly retrieve data */
-      gimp_get_data ("plug_in_fractalexplorer", &wvals);
-      make_color_map ();
-      break;
-
-    default:
-      break;
+      wvals.fractaltype  = param[3].data.d_int8;
+      wvals.xmin         = param[4].data.d_float;
+      wvals.xmax         = param[5].data.d_float;
+      wvals.ymin         = param[6].data.d_float;
+      wvals.ymax         = param[7].data.d_float;
+      wvals.iter         = param[8].data.d_float;
+      wvals.cx           = param[9].data.d_float;
+      wvals.cy           = param[10].data.d_float;
+      wvals.colormode    = param[11].data.d_int8;
+      wvals.redstretch   = param[12].data.d_float;
+      wvals.greenstretch = param[13].data.d_float;
+      wvals.bluestretch  = param[14].data.d_float;
+      wvals.redmode      = param[15].data.d_int8;
+      wvals.greenmode    = param[16].data.d_int8;
+      wvals.bluemode     = param[17].data.d_int8;
+      wvals.redinvert    = param[18].data.d_int8;
+      wvals.greeninvert  = param[19].data.d_int8;
+      wvals.blueinvert   = param[20].data.d_int8;
+      wvals.ncolors      = CLAMP(param[21].data.d_int32, 2, MAXNCOLORS);
     }
+    make_color_map();
+    break;
+  case GIMP_RUN_WITH_LAST_VALS:
+    // Possibly retrieve data
+    gimp_get_data("plug_in_fractalexplorer", &wvals);
+    make_color_map();
+    break;
+  default:
+    break;
+  }
 
   xmin = wvals.xmin;
   xmax = wvals.xmax;
@@ -366,34 +355,32 @@ run (const gchar      *name,
   cx = wvals.cx;
   cy = wvals.cy;
 
-  if (status == GIMP_PDB_SUCCESS)
+  if(status == GIMP_PDB_SUCCESS)
+  {
+    // Make sure that the drawable is not indexed
+    if(!gimp_drawable_is_indexed (drawable->drawable_id))
     {
-      /*  Make sure that the drawable is not indexed */
-      if (! gimp_drawable_is_indexed (drawable->drawable_id))
-        {
-          gimp_progress_init (_("Rendering fractal"));
+      gimp_progress_init(_("Rendering fractal"));
 
-          /* Set the tile cache size */
-          gimp_tile_cache_ntiles (2 * (drawable->width / gimp_tile_width() + 1));
-          /* Run! */
+      // Set the tile cache size
+      gimp_tile_cache_ntiles(2*(drawable->width/gimp_tile_width() + 1));
 
-          explorer (drawable);
-          if (run_mode != GIMP_RUN_NONINTERACTIVE)
-            gimp_displays_flush ();
+      // Run!
+      explorer(drawable);
+      if(run_mode != GIMP_RUN_NONINTERACTIVE) gimp_displays_flush();
 
-          /* Store data */
-          if (run_mode == GIMP_RUN_INTERACTIVE)
-            gimp_set_data ("plug_in_fractalexplorer",
-                           &wvals, sizeof (explorer_vals_t));
-        }
-      else
-        {
-          status = GIMP_PDB_EXECUTION_ERROR;
-        }
+      // Store data
+      if(run_mode == GIMP_RUN_INTERACTIVE)
+        gimp_set_data("plug_in_fractalexplorer", &wvals, sizeof(explorer_vals_t));
     }
+    else
+    {
+      status = GIMP_PDB_EXECUTION_ERROR;
+    }
+  }
   values[0].data.d_status = status;
 
-  gimp_drawable_detach (drawable);
+  gimp_drawable_detach(drawable);
 }
 
 /**********************************************************************

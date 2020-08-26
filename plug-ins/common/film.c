@@ -333,7 +333,7 @@ run (const gchar      *name,
 static gint32
 film (void)
 {
-  gint          width, height, tile_height;
+  gint          width, height; // tile_height;
   guchar       *hole;
   gint          film_height, film_width;
   gint          picture_width, picture_height;
@@ -365,7 +365,7 @@ film (void)
   gimp_context_set_foreground (&filmvals.number_color);
   gimp_context_set_background (&filmvals.film_color);
 
-  tile_height = gimp_tile_height ();
+  //tile_height = gimp_tile_height ();
 
   if (filmvals.keep_height) /* Search maximum picture height */
     {
@@ -471,8 +471,8 @@ film (void)
       height = gimp_image_height (image_ID_tmp);
       f = ((gdouble) picture_height) / (gdouble) height;
       picture_width = width * f;
-      if (gimp_image_base_type (image_ID_tmp) != GIMP_RGB_IMAGE)
-	gimp_image_convert_rgb (image_ID_tmp);
+      if (gimp_image_base_type (image_ID_tmp) != GIMP_RGB)
+        gimp_image_convert_rgb (image_ID_tmp);
       gimp_image_scale (image_ID_tmp, picture_width, picture_height);
 
       layers = gimp_image_get_layers (image_ID_tmp, &num_layers);

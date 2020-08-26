@@ -403,38 +403,37 @@ ppm_copy (ppm_t *s, ppm_t *p)
   p->col = g_memdup (s->col, p->width * 3 * p->height);
 }
 
-void
-free_rotate (ppm_t *p, double amount)
+void free_rotate(ppm_t *p, double amount)
 {
   int    x, y;
   double nx, ny;
-  double R, a;
+  //double R, a;
   ppm_t  tmp = {0, 0, NULL};
-  double f = amount * G_PI * 2 / 360.0;
-  int    rowstride = p->width * 3;
+  double f = amount*G_PI*2/360.0;
+  int    rowstride = p->width*3;
 
-  a = p->width / (float)p->height;
-  R = p->width < p->height ? p->width / 2 : p->height / 2;
+  //a = p->width/(float)p->height;
+  //R = p->width < p->height ? p->width/2 : p->height/2;
 
-  ppm_new (&tmp, p->width, p->height);
-  for (y = 0; y < p->height; y++)
+  ppm_new(&tmp, p->width, p->height);
+  for(y = 0; y < p->height; y++)
+  {
+    for(x = 0; x < p->width; x++)
     {
-      for (x = 0; x < p->width; x++)
-        {
-          double r, d;
+      double r, d;
 
-          nx = fabs (x - p->width / 2.0);
-          ny = fabs (y - p->height / 2.0);
-          r = sqrt (nx * nx + ny * ny);
+      nx = fabs(x - p->width/2.0);
+      ny = fabs(y - p->height/2.0);
+      r = sqrt(nx*nx + ny*ny);
 
-          d = atan2 ((y - p->height / 2.0), (x - p->width / 2.0));
+      d = atan2((y - p->height/2.0), (x - p->width/2.0));
 
-          nx = (p->width / 2.0 + cos (d - f) * r);
-          ny = (p->height / 2.0 + sin (d - f) * r);
-          get_rgb (p, nx, ny, tmp.col + y * rowstride + x * 3);
-        }
+      nx = (p->width/2.0 + cos(d - f)*r);
+      ny = (p->height/2.0 + sin(d - f)*r);
+      get_rgb(p, nx, ny, tmp.col + y*rowstride + x*3);
     }
-  ppm_kill (p);
+  }
+  ppm_kill(p);
   p->width = tmp.width;
   p->height = tmp.height;
   p->col = tmp.col;

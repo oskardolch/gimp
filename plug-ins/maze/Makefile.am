@@ -28,7 +28,7 @@ maze_SOURCES = \
 	maze-utils.c		\
 	maze-utils.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

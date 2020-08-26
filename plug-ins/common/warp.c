@@ -894,7 +894,7 @@ diff (GimpDrawable *drawable,
   gdouble gscalefac;                /* scaling factor for x,y differential of 'gradient' map */
   gdouble r, theta, dtheta;         /* rectangular<-> spherical coordinate transform for vector rotation */
   gdouble scale_vec_x, scale_vec_y; /* fixed vector X,Y component scaling factors */
-  gint has_alpha, ind;
+  //gint has_alpha, ind;
 
   /* ----------------------------------------------------------------------- */
 
@@ -925,7 +925,7 @@ diff (GimpDrawable *drawable,
   width     = drawable->width;
   height    = drawable->height;
   src_bytes = drawable->bpp;
-  has_alpha = gimp_drawable_has_alpha (drawable->drawable_id);
+  //has_alpha = gimp_drawable_has_alpha (drawable->drawable_id);
 
   /* -- Add two layers: X and Y Displacement vectors -- */
   /* -- I'm using a RGB  drawable and using the first two bytes for a
@@ -1053,7 +1053,7 @@ diff (GimpDrawable *drawable,
 
       dx = destx;
       dy = desty;
-      ind = 0;
+      //ind = 0;
 
       for (col = 0; col < (x2 - x1); col++) /* over columns of pixels */
         {
@@ -1212,9 +1212,9 @@ warp (GimpDrawable *orig_draw)
   gboolean      first_time = TRUE;
   gint          width;
   gint          height;
-  gint          bytes;
-  gint          orig_image_id;
-  gint          image_type;
+  //gint          bytes;
+  //gint          orig_image_id;
+  //gint          image_type;
   gint          x1, y1, x2, y2;
   gint32        xdlayer = -1;
   gint32        ydlayer = -1;
@@ -1240,8 +1240,8 @@ warp (GimpDrawable *orig_draw)
 
   width  = orig_draw->width;
   height = orig_draw->height;
-  bytes  = orig_draw->bpp;
-  image_type = gimp_drawable_type (orig_draw->drawable_id);
+  //bytes  = orig_draw->bpp;
+  //image_type = gimp_drawable_type (orig_draw->drawable_id);
 
   /* generate x,y differential images (arrays) */
   diff (disp_map, &xdlayer, &ydlayer);
@@ -1249,7 +1249,7 @@ warp (GimpDrawable *orig_draw)
   map_x = gimp_drawable_get (xdlayer);
   map_y = gimp_drawable_get (ydlayer);
 
-  orig_image_id = gimp_drawable_get_image (orig_draw->drawable_id);
+  //orig_image_id = gimp_drawable_get_image (orig_draw->drawable_id);
 
   for (warp_iter = 0; warp_iter < dvals.iter; warp_iter++)
     {
@@ -1307,10 +1307,10 @@ warp_one (GimpDrawable *draw,
   gint    width = -1;
   gint    height = -1;
   gint    dest_bytes=-1;
-  gint    dmap_bytes=-1;
+  // gint    dmap_bytes=-1;
 
   guchar *destrow, *dest;
-  guchar *srcrow, *src;
+  guchar *srcrow; //, *src;
   guchar *mxrow=NULL, *mx;  /* NULL ptr. to make gcc's -Wall fn. happy */
   guchar *myrow=NULL, *my;
 
@@ -1336,8 +1336,8 @@ warp_one (GimpDrawable *draw,
 
   gdouble dx, dy;           /* X and Y Displacement, integer from GRAY map */
 
-  gint    xm_alpha = 0;
-  gint    ym_alpha = 0;
+  //gint    xm_alpha = 0;
+  //gint    ym_alpha = 0;
   gint    mmag_alpha = 0;
   gint    xm_bytes = 1;
   gint    ym_bytes = 1;
@@ -1358,7 +1358,7 @@ warp_one (GimpDrawable *draw,
    height = draw->height;
    dest_bytes  = draw->bpp;
 
-   dmap_bytes = map_x->bpp;
+   // dmap_bytes = map_x->bpp;
 
    max_progress = (x2 - x1) * (y2 - y1);
 
@@ -1380,16 +1380,16 @@ warp_one (GimpDrawable *draw,
    gimp_pixel_rgn_init (&map_x_rgn,
                         map_x, x1, y1, (x2 - x1), (y2 - y1), FALSE, FALSE);
 
-   if (gimp_drawable_has_alpha(map_x->drawable_id))
-     xm_alpha = 1;
+   //if (gimp_drawable_has_alpha(map_x->drawable_id))
+   //  xm_alpha = 1;
 
    xm_bytes = gimp_drawable_bpp(map_x->drawable_id);
 
    gimp_pixel_rgn_init (&map_y_rgn,
                         map_y, x1, y1, (x2 - x1), (y2 - y1), FALSE, FALSE);
 
-   if (gimp_drawable_has_alpha(map_y->drawable_id))
-     ym_alpha = 1;
+   //if (gimp_drawable_has_alpha(map_y->drawable_id))
+   //  ym_alpha = 1;
 
    ym_bytes = gimp_drawable_bpp(map_y->drawable_id);
 
@@ -1430,7 +1430,7 @@ warp_one (GimpDrawable *draw,
        /* loop over destination pixels */
        for (y = dest_rgn.y; y < (dest_rgn.y + dest_rgn.h); y++)
          {
-           src = srcrow;
+           // src = srcrow;
            dest = destrow;
            mx = mxrow;
            my = myrow;

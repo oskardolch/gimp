@@ -241,14 +241,9 @@ query (void)
 			      "");
 }
 
-static void
-run (const gchar      *name,
-     gint              nparams,
-     const GimpParam  *param,
-     gint             *nreturn_vals,
-     GimpParam       **return_vals)
+static void run(const gchar *name, gint nparams, const GimpParam *param, gint *nreturn_vals, GimpParam **return_vals)
 {
-  static GimpParam   values[1];
+  static GimpParam   values[2];
   GimpRunMode        run_mode;
   GimpPDBStatusType  status = GIMP_PDB_SUCCESS;
   GimpParasite      *pipe_parasite;
@@ -272,181 +267,159 @@ run (const gchar      *name,
 
   INIT_I18N();
 
-  if (strcmp (name, LOAD_PROC) == 0)
-    {
-      image_ID = gih_load_image (param[1].data.d_string, &error);
+  if(strcmp(name, LOAD_PROC) == 0)
+  {
+    image_ID = gih_load_image(param[1].data.d_string, &error);
 
-      if (image_ID != -1)
-	{
-	  *nreturn_vals = 2;
-	  values[1].type         = GIMP_PDB_IMAGE;
-	  values[1].data.d_image = image_ID;
-	}
-      else
-	{
-	  status = GIMP_PDB_EXECUTION_ERROR;
-	}
-    }
-  else if (strcmp (name, SAVE_PROC) == 0)
-    {
-      image_ID = orig_image_ID = param[1].data.d_int32;
-      drawable_ID = param[2].data.d_int32;
-
-      /*  eventually export the image */
-      switch (run_mode)
-	{
-	case GIMP_RUN_INTERACTIVE:
-	case GIMP_RUN_WITH_LAST_VALS:
-	  gimp_ui_init (PLUG_IN_BINARY, FALSE);
-	  export = gimp_export_image (&image_ID, &drawable_ID, "GIH",
-				      GIMP_EXPORT_CAN_HANDLE_RGB    |
-				      GIMP_EXPORT_CAN_HANDLE_GRAY   |
-				      GIMP_EXPORT_CAN_HANDLE_ALPHA  |
-				      GIMP_EXPORT_CAN_HANDLE_LAYERS |
-				      GIMP_EXPORT_NEEDS_ALPHA);
-	  if (export == GIMP_EXPORT_CANCEL)
-	    {
-	      values[0].data.d_status = GIMP_PDB_CANCEL;
-	      return;
-	    }
-	  break;
-	default:
-	  break;
-	}
-
-      layer_ID = gimp_image_get_layers (image_ID, &nlayers);
-      num_useable_layers = 0;
-      for (layer = 0; layer < nlayers; layer++)
-	{
-	  if (!gimp_drawable_has_alpha (layer_ID[layer]))
-	    {
-	      layer_name = gimp_drawable_get_name (layer_ID[layer]);
-	      g_message (_("Layer %s doesn't have an alpha channel, skipped"),
-			 layer_name);
-	      g_free (layer_name);
-	    }
-	  num_useable_layers++;
-	}
-
-      switch (run_mode)
-	{
-	case GIMP_RUN_INTERACTIVE:
-	  /*  Possibly retrieve data  */
-	  gimp_get_data (SAVE_PROC, &info);
-
-	  gimp_pixpipe_params_init (&gihparams);
-
-	  /* Setup default values */
-	  if (gihparams.rows < 1) gihparams.rows = 1;
-	  if (gihparams.cols < 1) gihparams.cols = 1;
-
-	  gihparams.ncells = (num_useable_layers *
-                              gihparams.rows * gihparams.cols);
-
-	  if (gihparams.cellwidth == 1 && gihparams.cellheight == 1)
-	    {
-	      gihparams.cellwidth  =
-		gimp_image_width (image_ID)  / gihparams.cols;
-	      gihparams.cellheight =
-		gimp_image_height (image_ID) / gihparams.rows;
-	    }
-
-	  pipe_parasite =
-	    gimp_image_parasite_find (orig_image_ID,
-				      "gimp-brush-pipe-parameters");
-	  if (pipe_parasite)
-	    gimp_pixpipe_params_parse (gimp_parasite_data (pipe_parasite),
-                                       &gihparams);
-
-	  if (!gih_save_dialog (image_ID))
-	    status = GIMP_PDB_CANCEL;
-	  break;
-
-	case GIMP_RUN_NONINTERACTIVE:
-	  if (nparams != 15)
-	    {
-	      status = GIMP_PDB_CALLING_ERROR;
-	    }
-	  else
-	    {
-	      info.spacing = param[5].data.d_int32;
-	      strncpy (info.description, param[6].data.d_string, MAXDESCLEN);
-	      info.description[MAXDESCLEN] = 0;
-
-	      gimp_pixpipe_params_init (&gihparams);
-
-	      gihparams.cellwidth  = param[7].data.d_int32;
-	      gihparams.cellheight = param[8].data.d_int32;
-	      gihparams.cols       = param[9].data.d_int8;
-	      gihparams.rows       = param[10].data.d_int8;
-	      gihparams.dim        = param[11].data.d_int32;
-	      gihparams.ncells     = 1;
-
-	      if (param[13].data.d_int32 != gihparams.dim)
-		{
-		  status = GIMP_PDB_CALLING_ERROR;
-		}
-	      else
-		{
-		  for (i = 0; i < gihparams.dim; i++)
-		    {
-		      gihparams.rank[i]      = param[12].data.d_int8array[i];
-		      gihparams.selection[i] = g_strdup (param[14].data.d_stringarray[i]);
-		      gihparams.ncells       *= gihparams.rank[i];
-		    }
-		}
-	    }
-	  break;
-
-	case GIMP_RUN_WITH_LAST_VALS:
-	  gimp_get_data (SAVE_PROC, &info);
-	  pipe_parasite =
-	    gimp_image_parasite_find (orig_image_ID,
-				      "gimp-brush-pipe-parameters");
-	  gimp_pixpipe_params_init (&gihparams);
-	  if (pipe_parasite)
-	    gimp_pixpipe_params_parse (gimp_parasite_data (pipe_parasite),
-                                       &gihparams);
-	  break;
-	}
-
-      if (status == GIMP_PDB_SUCCESS)
-	{
-	  if (gih_save_image (param[3].data.d_string,
-			      image_ID, orig_image_ID, drawable_ID, &error))
-	    {
-	      gimp_set_data (SAVE_PROC, &info, sizeof (info));
-	    }
-	  else
-	    {
-	      status = GIMP_PDB_EXECUTION_ERROR;
-	    }
-	}
-
-      if (export == GIMP_EXPORT_EXPORT)
-	gimp_image_delete (image_ID);
-    }
-  else
-    {
-      status = GIMP_PDB_CALLING_ERROR;
-    }
-
-  if (status != GIMP_PDB_SUCCESS && error)
+    if(image_ID != -1)
     {
       *nreturn_vals = 2;
-      values[1].type          = GIMP_PDB_STRING;
-      values[1].data.d_string = error->message;
+      values[1].type = GIMP_PDB_IMAGE;
+      values[1].data.d_image = image_ID;
     }
+    else
+    {
+      status = GIMP_PDB_EXECUTION_ERROR;
+    }
+  }
+  else if(strcmp(name, SAVE_PROC) == 0)
+  {
+    image_ID = orig_image_ID = param[1].data.d_int32;
+    drawable_ID = param[2].data.d_int32;
+
+    // eventually export the image
+    switch(run_mode)
+    {
+      case GIMP_RUN_INTERACTIVE:
+      case GIMP_RUN_WITH_LAST_VALS:
+        gimp_ui_init(PLUG_IN_BINARY, FALSE);
+        export = gimp_export_image(&image_ID, &drawable_ID, "GIH",
+          GIMP_EXPORT_CAN_HANDLE_RGB | GIMP_EXPORT_CAN_HANDLE_GRAY | GIMP_EXPORT_CAN_HANDLE_ALPHA |
+          GIMP_EXPORT_CAN_HANDLE_LAYERS | GIMP_EXPORT_NEEDS_ALPHA);
+        if(export == GIMP_EXPORT_CANCEL)
+        {
+          values[0].data.d_status = GIMP_PDB_CANCEL;
+          return;
+        }
+        break;
+      default:
+        break;
+    }
+
+    layer_ID = gimp_image_get_layers (image_ID, &nlayers);
+    num_useable_layers = 0;
+    for(layer = 0; layer < nlayers; layer++)
+    {
+      if(!gimp_drawable_has_alpha(layer_ID[layer]))
+      {
+        layer_name = gimp_drawable_get_name(layer_ID[layer]);
+        g_message(_("Layer %s doesn't have an alpha channel, skipped"), layer_name);
+        g_free(layer_name);
+      }
+      num_useable_layers++;
+    }
+
+    switch (run_mode)
+    {
+      case GIMP_RUN_INTERACTIVE:
+        //  Possibly retrieve data
+        gimp_get_data(SAVE_PROC, &info);
+
+        gimp_pixpipe_params_init(&gihparams);
+
+        // Setup default values
+        if(gihparams.rows < 1) gihparams.rows = 1;
+        if(gihparams.cols < 1) gihparams.cols = 1;
+
+        gihparams.ncells = (num_useable_layers*gihparams.rows*gihparams.cols);
+
+        if(gihparams.cellwidth == 1 && gihparams.cellheight == 1)
+        {
+          gihparams.cellwidth = gimp_image_width(image_ID)/gihparams.cols;
+          gihparams.cellheight = gimp_image_height(image_ID)/gihparams.rows;
+        }
+
+        pipe_parasite = gimp_image_parasite_find(orig_image_ID, "gimp-brush-pipe-parameters");
+        if(pipe_parasite)
+          gimp_pixpipe_params_parse(gimp_parasite_data (pipe_parasite), &gihparams);
+
+        if(!gih_save_dialog (image_ID)) status = GIMP_PDB_CANCEL;
+        break;
+      case GIMP_RUN_NONINTERACTIVE:
+        if(nparams != 15)
+        {
+          status = GIMP_PDB_CALLING_ERROR;
+        }
+        else
+        {
+          info.spacing = param[5].data.d_int32;
+          strncpy(info.description, param[6].data.d_string, MAXDESCLEN);
+          info.description[MAXDESCLEN] = 0;
+
+          gimp_pixpipe_params_init(&gihparams);
+
+          gihparams.cellwidth  = param[7].data.d_int32;
+          gihparams.cellheight = param[8].data.d_int32;
+          gihparams.cols       = param[9].data.d_int8;
+          gihparams.rows       = param[10].data.d_int8;
+          gihparams.dim        = param[11].data.d_int32;
+          gihparams.ncells     = 1;
+
+          if(param[13].data.d_int32 != gihparams.dim)
+          {
+            status = GIMP_PDB_CALLING_ERROR;
+          }
+          else
+          {
+            for(i = 0; i < gihparams.dim; i++)
+            {
+              gihparams.rank[i] = param[12].data.d_int8array[i];
+              gihparams.selection[i] = g_strdup(param[14].data.d_stringarray[i]);
+              gihparams.ncells *= gihparams.rank[i];
+            }
+          }
+        }
+        break;
+      case GIMP_RUN_WITH_LAST_VALS:
+        gimp_get_data(SAVE_PROC, &info);
+        pipe_parasite = gimp_image_parasite_find(orig_image_ID, "gimp-brush-pipe-parameters");
+        gimp_pixpipe_params_init(&gihparams);
+        if(pipe_parasite)
+          gimp_pixpipe_params_parse(gimp_parasite_data(pipe_parasite), &gihparams);
+        break;
+    }
+
+    if(status == GIMP_PDB_SUCCESS)
+    {
+      if(gih_save_image(param[3].data.d_string, image_ID, orig_image_ID, drawable_ID, &error))
+      {
+        gimp_set_data(SAVE_PROC, &info, sizeof (info));
+      }
+      else
+      {
+        status = GIMP_PDB_EXECUTION_ERROR;
+      }
+    }
+
+    if(export == GIMP_EXPORT_EXPORT) gimp_image_delete(image_ID);
+  }
+  else
+  {
+    status = GIMP_PDB_CALLING_ERROR;
+  }
+
+  if(status != GIMP_PDB_SUCCESS && error)
+  {
+    *nreturn_vals = 2;
+    values[1].type          = GIMP_PDB_STRING;
+    values[1].data.d_string = error->message;
+  }
 
   values[0].data.d_status = status;
 }
 
-
-/*  load routines  */
-
-static gboolean
-gih_load_one_brush (gint   fd,
-		    gint32 image_ID)
+//  load routines
+static gboolean gih_load_one_brush(gint fd, gint32 image_ID)
 {
   static gint    num_layers = 0;
   gchar         *name       = NULL;
@@ -455,187 +428,166 @@ gih_load_one_brush (gint   fd,
   gint32         layer_ID;
   GimpDrawable  *drawable;
   GimpPixelRgn   pixel_rgn;
-  gint           version_extra;
+  //gint           version_extra;
   gint           bn_size;
   GimpImageType  image_type;
   gint           width, height;
   gint           new_width, new_height;
 
-  g_return_val_if_fail (fd != -1, FALSE);
-  g_return_val_if_fail (image_ID != -1, FALSE);
+  g_return_val_if_fail(fd != -1, FALSE);
+  g_return_val_if_fail(image_ID != -1, FALSE);
 
-  if (read (fd, &bh, sizeof (bh)) != sizeof (bh))
+  if(read(fd, &bh, sizeof (bh)) != sizeof(bh)) return FALSE;
+
+  // rearrange the bytes in each unsigned int
+  bh.header_size  = g_ntohl(bh.header_size);
+  bh.version      = g_ntohl(bh.version);
+  bh.width        = g_ntohl(bh.width);
+  bh.height       = g_ntohl(bh.height);
+  bh.bytes        = g_ntohl(bh.bytes);
+  bh.magic_number = g_ntohl(bh.magic_number);
+  bh.spacing      = g_ntohl(bh.spacing);
+
+  // How much extra to add to the header seek - 1 needs a bit more
+  //version_extra = 0;
+
+  if(bh.version == 1)
+  {
+    // Version 1 didn't know about spacing
+    bh.spacing = 25;
+    // And we need to rewind the handle a bit too
+    lseek(fd, -8, SEEK_CUR);
+    //version_extra = 8;
+  }
+
+  // Version 1 didn't know about magic either
+  if((bh.version != 1 && (bh.magic_number != GBRUSH_MAGIC || bh.version != 2)) ||
+    bh.header_size <= sizeof(bh))
+  {
     return FALSE;
+  }
 
-  /*  rearrange the bytes in each unsigned int  */
-  bh.header_size  = g_ntohl (bh.header_size);
-  bh.version      = g_ntohl (bh.version);
-  bh.width        = g_ntohl (bh.width);
-  bh.height       = g_ntohl (bh.height);
-  bh.bytes        = g_ntohl (bh.bytes);
-  bh.magic_number = g_ntohl (bh.magic_number);
-  bh.spacing      = g_ntohl (bh.spacing);
-
-  /* How much extra to add to the header seek - 1 needs a bit more */
-  version_extra = 0;
-
-  if (bh.version == 1)
+  if((bn_size = (bh.header_size - sizeof(bh))) > 0)
+  {
+    name = g_new(gchar, bn_size);
+    if((read(fd, name, bn_size)) < bn_size)
     {
-      /* Version 1 didn't know about spacing */
-      bh.spacing = 25;
-      /* And we need to rewind the handle a bit too */
-      lseek (fd, -8, SEEK_CUR);
-      version_extra = 8;
-    }
-  /* Version 1 didn't know about magic either */
-  if ((bh.version != 1 &&
-       (bh.magic_number != GBRUSH_MAGIC || bh.version != 2)) ||
-      bh.header_size <= sizeof (bh))
-    {
+      g_message(_("Error in GIMP brush pipe file."));
+      g_free(name);
       return FALSE;
     }
-
-  if ((bn_size = (bh.header_size - sizeof (bh))) > 0)
-    {
-      name = g_new (gchar, bn_size);
-      if ((read (fd, name, bn_size)) < bn_size)
-	{
-          g_message (_("Error in GIMP brush pipe file."));
-	  g_free (name);
-	  return FALSE;
-	}
-    }
+  }
   else
+  {
+    name = g_strdup(_("Unnamed"));
+  }
+
+  // Now there's just raw data left
+  brush_buf = g_malloc(bh.width*bh.height*bh.bytes);
+
+  if(read(fd, brush_buf, bh.width*bh.height*bh.bytes) != bh.width*bh.height*bh.bytes)
+  {
+    g_free(brush_buf);
+    g_free(name);
+    return FALSE;
+  }
+
+  if(bh.bytes == 1)
+  {
+    PatternHeader ph;
+
+    // For backwards-compatibility, check if a pattern follows.
+    // The obsolete .gpb format did it this way.
+
+    if(read(fd, &ph, sizeof(ph)) == sizeof(ph))
     {
-      name = g_strdup (_("Unnamed"));
+      //  rearrange the bytes in each unsigned int
+      ph.header_size  = g_ntohl(ph.header_size);
+      ph.version      = g_ntohl(ph.version);
+      ph.width        = g_ntohl(ph.width);
+      ph.height       = g_ntohl(ph.height);
+      ph.bytes        = g_ntohl(ph.bytes);
+      ph.magic_number = g_ntohl(ph.magic_number);
+
+      if(ph.magic_number == GPATTERN_MAGIC && ph.version == 1 &&
+        ph.header_size > sizeof (ph) && ph.bytes == 3 && ph.width == bh.width &&
+        ph.height == bh.height && lseek(fd, ph.header_size - sizeof(ph), SEEK_CUR) > 0)
+      {
+        guchar *plain_brush = brush_buf;
+        gint    i;
+
+        bh.bytes = 4;
+        brush_buf = g_malloc(4*bh.width*bh.height);
+
+        for (i = 0; i < ph.width * ph.height; i++)
+        {
+          if(read(fd, brush_buf + i*4, 3) != 3)
+          {
+            g_free(name);
+            g_free(plain_brush);
+            g_free(brush_buf);
+            return FALSE;
+          }
+          brush_buf[i*4 + 3] = plain_brush[i];
+        }
+        g_free(plain_brush);
+      }
+      else if(lseek(fd, -((off_t)sizeof(PatternHeader)), SEEK_CUR) < 0)
+      {
+        g_message(_("GIMP brush file appears to be corrupted."));
+        g_free(name);
+        g_free(brush_buf);
+        return FALSE;
+      }
     }
+  }
 
-  /* Now there's just raw data left. */
-
-  brush_buf = g_malloc (bh.width * bh.height * bh.bytes);
-
-  if (read (fd, brush_buf,
-	    bh.width * bh.height * bh.bytes) != bh.width * bh.height * bh.bytes)
-    {
-      g_free (brush_buf);
-      g_free (name);
-      return FALSE;
-    }
-
-
-  if (bh.bytes == 1)
-    {
-      PatternHeader ph;
-
-      /*  For backwards-compatibility, check if a pattern follows.
-	  The obsolete .gpb format did it this way.  */
-
-      if (read (fd, &ph, sizeof(ph)) == sizeof(ph))
-	{
-	  /*  rearrange the bytes in each unsigned int  */
-	  ph.header_size  = g_ntohl (ph.header_size);
-	  ph.version      = g_ntohl (ph.version);
-	  ph.width        = g_ntohl (ph.width);
-	  ph.height       = g_ntohl (ph.height);
-	  ph.bytes        = g_ntohl (ph.bytes);
-	  ph.magic_number = g_ntohl (ph.magic_number);
-
-	  if (ph.magic_number == GPATTERN_MAGIC && ph.version == 1 &&
-	      ph.header_size > sizeof (ph) &&
-	      ph.bytes == 3 && ph.width == bh.width && ph.height == bh.height &&
-	      lseek (fd, ph.header_size - sizeof (ph), SEEK_CUR) > 0)
-	    {
-	      guchar *plain_brush = brush_buf;
-	      gint    i;
-
-	      bh.bytes = 4;
-	      brush_buf = g_malloc (4 * bh.width * bh.height);
-
-	      for (i = 0; i < ph.width * ph.height; i++)
-		{
-		  if (read (fd, brush_buf + i * 4, 3) != 3)
-		    {
-		      g_free (name);
-		      g_free (plain_brush);
-		      g_free (brush_buf);
-		      return FALSE;
-		    }
-		  brush_buf[i * 4 + 3] = plain_brush[i];
-		}
-	      g_free (plain_brush);
-	    }
-	  else if (lseek (fd, - ((off_t) sizeof (PatternHeader)), SEEK_CUR) < 0)
-	    {
-	      g_message (_("GIMP brush file appears to be corrupted."));
-	      g_free (name);
-	      g_free (brush_buf);
-	      return FALSE;
-	    }
-	}
-    }
-
-  /*
-   * Create a new layer of the proper size.
-   */
-
+  // Create a new layer of the proper size
   switch (bh.bytes)
-    {
+  {
     case 1:
       image_type = GIMP_GRAY_IMAGE;
       break;
-
     case 4:
       image_type = GIMP_RGBA_IMAGE;
-      if (gimp_image_base_type (image_ID) == GIMP_GRAY)
-	gimp_image_convert_rgb (image_ID);
+      if(gimp_image_base_type(image_ID) == GIMP_GRAY) gimp_image_convert_rgb(image_ID);
       break;
-
     default:
-      g_message ("Unsupported brush depth: %d\nGIMP Brushes must be GRAY or RGBA\n",
-		 bh.bytes);
+      g_message("Unsupported brush depth: %d\nGIMP Brushes must be GRAY or RGBA\n", bh.bytes);
       return FALSE;
-    }
+  }
 
-  new_width  = width  = gimp_image_width (image_ID);
-  new_height = height = gimp_image_height (image_ID);
+  new_width = width = gimp_image_width(image_ID);
+  new_height = height = gimp_image_height(image_ID);
 
-  if (bh.width > width || bh.height > height)
-    {
-      new_width  = MAX (width, bh.width);
-      new_height = MAX (height, bh.height);
-      gimp_image_resize (image_ID,
-			 new_width, new_height,
-			 (width - new_width) / 2, (height - new_height) / 2);
-    }
+  if(bh.width > width || bh.height > height)
+  {
+    new_width = MAX(width, bh.width);
+    new_height = MAX(height, bh.height);
+    gimp_image_resize(image_ID, new_width, new_height, (width - new_width)/2, (height - new_height)/2);
+  }
 
-  layer_ID = gimp_layer_new (image_ID, name,
-			     bh.width, bh.height,
-			     image_type, 100, GIMP_NORMAL_MODE);
+  layer_ID = gimp_layer_new(image_ID, name, bh.width, bh.height, image_type, 100, GIMP_NORMAL_MODE);
   g_free (name);
 
-  if (layer_ID != -1)
+  if(layer_ID != -1)
+  {
+    gimp_image_add_layer(image_ID, layer_ID, num_layers++);
+    gimp_layer_set_offsets(layer_ID, (new_width - bh.width)/2, (new_height - bh.height)/2);
+
+    drawable = gimp_drawable_get (layer_ID);
+    gimp_pixel_rgn_init (&pixel_rgn, drawable, 0, 0, drawable->width, drawable->height, TRUE, FALSE);
+
+    gimp_pixel_rgn_set_rect(&pixel_rgn, brush_buf, 0, 0, bh.width, bh.height);
+
+    if(image_type == GIMP_GRAY_IMAGE)
     {
-      gimp_image_add_layer (image_ID, layer_ID, num_layers++);
-      gimp_layer_set_offsets (layer_ID,
-			      (new_width - bh.width)   / 2,
-			      (new_height - bh.height) / 2);
-
-      drawable = gimp_drawable_get (layer_ID);
-      gimp_pixel_rgn_init (&pixel_rgn, drawable,
-			   0, 0, drawable->width, drawable->height,
-			   TRUE, FALSE);
-
-      gimp_pixel_rgn_set_rect (&pixel_rgn,
-                               brush_buf, 0, 0, bh.width, bh.height);
-
-      if (image_type == GIMP_GRAY_IMAGE)
-        {
-          gimp_invert (layer_ID);
-          gimp_layer_add_alpha (layer_ID);
-        }
+      gimp_invert(layer_ID);
+      gimp_layer_add_alpha(layer_ID);
     }
+  }
 
-  g_free (brush_buf);
+  g_free(brush_buf);
 
   return TRUE;
 }

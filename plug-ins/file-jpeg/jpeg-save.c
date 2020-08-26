@@ -1499,7 +1499,7 @@ create_thumbnail (gint32    image_ID,
   struct jpeg_compress_struct cinfo;
   struct my_error_mgr         jerr;
   my_dest_ptr dest;
-  gboolean  alpha = FALSE;
+  //gboolean  alpha = FALSE;
   JSAMPROW  scanline[1];
   guchar   *buf = NULL;
   gint      i;
@@ -1523,7 +1523,7 @@ create_thumbnail (gint32    image_ID,
 
   if ((bpp == 2) || (bpp == 4))
     {
-      alpha = TRUE;
+      //alpha = TRUE;
       rbpp = bpp - 1;
     }
 

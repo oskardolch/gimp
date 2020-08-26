@@ -30,7 +30,6 @@ AM_LDFLAGS = $(mwindows)
 
 SUBDIRS = tinyscheme ftx scripts
 
-
 libexecdir = $(gimpplugindir)/plug-ins
 
 libexec_PROGRAMS = script-fu

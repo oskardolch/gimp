@@ -773,9 +773,9 @@ create_image (GdkPixbuf   *pixbuf,
   gdouble    xres, yres;
   gchar     *comment;
   gint       width, height;
-  gboolean   status;
+  //gboolean   status;
 
-  status = gimp_progress_init (_("Importing screenshot"));
+  //status = gimp_progress_init (_("Importing screenshot"));
 
   width  = gdk_pixbuf_get_width (pixbuf);
   height = gdk_pixbuf_get_height (pixbuf);

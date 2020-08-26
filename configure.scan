@@ -1,0 +1,180 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ([2.69])
+AC_INIT([FULL-PACKAGE-NAME], [VERSION], [BUG-REPORT-ADDRESS])
+AC_CONFIG_SRCDIR([config.h.in])
+AC_CONFIG_HEADERS([config.h])
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_AWK
+AC_PROG_YACC
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_LEX
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+# Checks for libraries.
+# FIXME: Replace `main' with a function in `-lX11':
+AC_CHECK_LIB([X11], [main])
+# FIXME: Replace `main' with a function in `-lXext':
+AC_CHECK_LIB([Xext], [main])
+# FIXME: Replace `main' with a function in `-lgdi32':
+AC_CHECK_LIB([gdi32], [main])
+# FIXME: Replace `main' with a function in `-lm':
+AC_CHECK_LIB([m], [main])
+# FIXME: Replace `main' with a function in `-lole32':
+AC_CHECK_LIB([ole32], [main])
+# FIXME: Replace `main' with a function in `-lrpcrt4':
+AC_CHECK_LIB([rpcrt4], [main])
+# FIXME: Replace `main' with a function in `-luser32':
+AC_CHECK_LIB([user32], [main])
+# FIXME: Replace `main' with a function in `-lws2_32':
+AC_CHECK_LIB([ws2_32], [main])
+
+# Checks for header files.
+AC_PATH_X
+AC_FUNC_ALLOCA
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h inttypes.h langinfo.h libintl.h limits.h locale.h malloc.h netdb.h netinet/in.h stddef.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+AC_TYPE_UID_T
+AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT8_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT8_T
+
+# Checks for library functions.
+AC_FUNC_FORK
+AC_FUNC_MALLOC
+AC_FUNC_MMAP
+AC_FUNC_REALLOC
+AC_FUNC_STRTOD
+AC_CHECK_FUNCS([atexit dup2 floor ftruncate gettimeofday memmove memset modf munmap nl_langinfo pow select setlocale socket sqrt strchr strrchr strstr strtol strtoul])
+
+AC_CONFIG_FILES([Makefile
+                 app/Makefile
+                 app/actions/Makefile
+                 app/base/Makefile
+                 app/composite/Makefile
+                 app/config/Makefile
+                 app/core/Makefile
+                 app/dialogs/Makefile
+                 app/display/Makefile
+                 app/file/Makefile
+                 app/gegl/Makefile
+                 app/gui/Makefile
+                 app/menus/Makefile
+                 app/paint-funcs/Makefile
+                 app/paint/Makefile
+                 app/pdb/Makefile
+                 app/plug-in/Makefile
+                 app/text/Makefile
+                 app/tools/Makefile
+                 app/vectors/Makefile
+                 app/widgets/Makefile
+                 app/xcf/Makefile
+                 cursors/Makefile
+                 data/Makefile
+                 data/brushes/Makefile
+                 data/environ/Makefile
+                 data/gradients/Makefile
+                 data/images/Makefile
+                 data/interpreters/Makefile
+                 data/palettes/Makefile
+                 data/patterns/Makefile
+                 data/tips/Makefile
+                 desktop/Makefile
+                 devel-docs/Makefile
+                 devel-docs/app/Makefile
+                 devel-docs/libgimp/Makefile
+                 devel-docs/libgimpbase/Makefile
+                 devel-docs/libgimpcolor/Makefile
+                 devel-docs/libgimpconfig/Makefile
+                 devel-docs/libgimpmath/Makefile
+                 devel-docs/libgimpmodule/Makefile
+                 devel-docs/libgimpthumb/Makefile
+                 devel-docs/libgimpwidgets/Makefile
+                 devel-docs/tools/Makefile
+                 docs/Makefile
+                 etc/Makefile
+                 libgimp/Makefile
+                 libgimpbase/Makefile
+                 libgimpcolor/Makefile
+                 libgimpconfig/Makefile
+                 libgimpmath/Makefile
+                 libgimpmodule/Makefile
+                 libgimpthumb/Makefile
+                 libgimpwidgets/Makefile
+                 m4macros/Makefile
+                 menus/Makefile
+                 modules/Makefile
+                 plug-ins/Makefile
+                 plug-ins/color-rotate/Makefile
+                 plug-ins/color-rotate/images/Makefile
+                 plug-ins/common/Makefile
+                 plug-ins/file-bmp/Makefile
+                 plug-ins/file-faxg3/Makefile
+                 plug-ins/file-fits/Makefile
+                 plug-ins/file-fli/Makefile
+                 plug-ins/file-ico/Makefile
+                 plug-ins/file-jpeg/Makefile
+                 plug-ins/file-psd/Makefile
+                 plug-ins/file-sgi/Makefile
+                 plug-ins/file-uri/Makefile
+                 plug-ins/file-xjt/Makefile
+                 plug-ins/flame/Makefile
+                 plug-ins/fractal-explorer/Makefile
+                 plug-ins/fractal-explorer/examples/Makefile
+                 plug-ins/gfig/Makefile
+                 plug-ins/gfig/gfig-examples/Makefile
+                 plug-ins/gfig/images/Makefile
+                 plug-ins/gimpressionist/Brushes/Makefile
+                 plug-ins/gimpressionist/Makefile
+                 plug-ins/gimpressionist/Paper/Makefile
+                 plug-ins/gimpressionist/Presets/Makefile
+                 plug-ins/gradient-flare/Makefile
+                 plug-ins/gradient-flare/flares/Makefile
+                 plug-ins/help-browser/Makefile
+                 plug-ins/help/Makefile
+                 plug-ins/ifs-compose/Makefile
+                 plug-ins/imagemap/Makefile
+                 plug-ins/imagemap/images/Makefile
+                 plug-ins/lighting/Makefile
+                 plug-ins/lighting/images/Makefile
+                 plug-ins/map-object/Makefile
+                 plug-ins/maze/Makefile
+                 plug-ins/metadata/Makefile
+                 plug-ins/pagecurl/Makefile
+                 plug-ins/print/Makefile
+                 plug-ins/pygimp/Makefile
+                 plug-ins/pygimp/doc/Makefile
+                 plug-ins/pygimp/plug-ins/Makefile
+                 plug-ins/script-fu/Makefile
+                 plug-ins/script-fu/ftx/Makefile
+                 plug-ins/script-fu/scripts/Makefile
+                 plug-ins/script-fu/scripts/images/Makefile
+                 plug-ins/script-fu/tinyscheme/Makefile
+                 plug-ins/selection-to-path/Makefile
+                 plug-ins/twain/Makefile
+                 plug-ins/win-snap/Makefile
+                 themes/Default/Makefile
+                 themes/Default/images/Makefile
+                 themes/Default/images/preferences/Makefile
+                 themes/Makefile
+                 themes/Small/Makefile
+                 tools/Makefile
+                 tools/pdbgen/Makefile])
+AC_OUTPUT

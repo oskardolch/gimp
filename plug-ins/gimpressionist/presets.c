@@ -238,21 +238,20 @@ preset_refresh_presets (void)
   preset_read_dir_into_list ();
 }
 
-static int
-load_old_preset (const gchar *fname)
+static int load_old_preset(const gchar *fname)
 {
   FILE *f;
-  int   len;
+  //int len;
 
-  f = g_fopen (fname, "rb");
-  if (!f)
-    {
-      g_printerr ("Error opening file \"%s\" for reading!\n",
-                  gimp_filename_to_utf8 (fname));
-      return -1;
-    }
-  len = fread (&pcvals, 1, sizeof (pcvals), f);
-  fclose (f);
+  f = g_fopen(fname, "rb");
+  if(!f)
+  {
+    g_printerr("Error opening file \"%s\" for reading!\n", gimp_filename_to_utf8(fname));
+    return -1;
+  }
+  //len =
+  fread(&pcvals, 1, sizeof(pcvals), f);
+  fclose(f);
 
   return 0;
 }

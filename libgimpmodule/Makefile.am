@@ -42,9 +42,7 @@ endif
 libgimpmoduleincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimpmodule
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"LibGimpModule\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"LibGimpModule\" \
 	-I$(top_srcdir)			\
 	$(GLIB_CFLAGS)			\
 	$(GMODULE_NO_EXPORT_CFLAGS)	\

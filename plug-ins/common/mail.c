@@ -707,7 +707,7 @@ to64 (const gchar  *filename,
   bytes = g_base64_encode_close (TRUE, out, &state, &save);
   fwrite (out, 1, bytes, outfile);
 
-  g_mapped_file_free (infile);
+  g_mapped_file_unref (infile);
 
   return TRUE;
 }

@@ -251,7 +251,7 @@ blur_line (const gdouble *ctable,
            const gint     len,
            const gint     bytes)
 {
-  const gdouble *cmatrix_p;
+  //const gdouble *cmatrix_p;
   const gdouble *ctable_p;
   const guchar  *src_p;
   const guchar  *src_p1;
@@ -337,7 +337,7 @@ blur_line (const gdouble *ctable,
             {
               gdouble sum = 0;
 
-              cmatrix_p = cmatrix;
+              //cmatrix_p = cmatrix;
               src_p1 = src_p;
               ctable_p = ctable;
 

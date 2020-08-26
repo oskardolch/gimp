@@ -122,11 +122,11 @@ run (const gchar      *name,
      GimpParam       **return_vals)
 {
   static GimpParam  values[2];
-  GimpRunMode       run_mode;
+  //GimpRunMode       run_mode;
   gint32            image_ID;
   GError           *error = NULL;
 
-  run_mode = param[0].data.d_int32;
+  //run_mode = param[0].data.d_int32;
 
   *nreturn_vals = 1;
   *return_vals = values;

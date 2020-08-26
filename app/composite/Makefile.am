@@ -4,9 +4,7 @@ libgimpbase = $(top_builddir)/libgimpbase/libgimpbase-$(GIMP_API_VERSION).la
 libgimpcolor = $(top_builddir)/libgimpcolor/libgimpcolor-$(GIMP_API_VERSION).la
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"Gimp-Composite\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"Gimp-Composite\" \
 	-I$(top_builddir)	\
 	-I$(top_srcdir)		\
 	-I$(top_builddir)/app	\

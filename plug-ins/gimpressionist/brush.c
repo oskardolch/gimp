@@ -96,16 +96,14 @@ set_colorbrushes (const gchar *fn)
   pcvals.color_brushes = file_is_color (fn);
 }
 
-static void
-brushdmenuselect (GtkWidget *widget,
-                  gpointer   data)
+static void brushdmenuselect(GtkWidget *widget, gpointer data)
 {
   GimpPixelRgn  src_rgn;
   guchar       *src_row;
   guchar       *src;
   gint          id;
-  gint          alpha, bpp;
-  gboolean      has_alpha;
+  gint          bpp; // alpha
+  //gboolean      has_alpha;
   gint          x, y;
   ppm_t        *p;
   gint          x1, y1, x2, y2;
@@ -113,89 +111,83 @@ brushdmenuselect (GtkWidget *widget,
   GimpDrawable *drawable;
   gint          rowstride;
 
-  gimp_int_combo_box_get_active (GIMP_INT_COMBO_BOX (widget), &id);
+  gimp_int_combo_box_get_active(GIMP_INT_COMBO_BOX (widget), &id);
 
-  if (id == -1)
-    return;
+  if(id == -1) return;
 
-  if (brush_from_file == 2)
-    return; /* Not finished GUI-building yet */
+  if(brush_from_file == 2)
+    return; // Not finished GUI-building yet
 
-  if (brush_from_file)
-    {
+  if(brush_from_file)
+  {
 #if 0
-      unselectall (brush_list);
+    unselectall(brush_list);
 #endif
-      preset_save_button_set_sensitive (FALSE);
-    }
+    preset_save_button_set_sensitive(FALSE);
+  }
 
-  gtk_adjustment_set_value (GTK_ADJUSTMENT (brush_gamma_adjust), 1.0);
-  gtk_adjustment_set_value (GTK_ADJUSTMENT (brush_aspect_adjust), 0.0);
+  gtk_adjustment_set_value(GTK_ADJUSTMENT(brush_gamma_adjust), 1.0);
+  gtk_adjustment_set_value(GTK_ADJUSTMENT(brush_aspect_adjust), 0.0);
 
-  drawable = gimp_drawable_get (id);
+  drawable = gimp_drawable_get(id);
 
-  gimp_drawable_mask_bounds (drawable->drawable_id, &x1, &y1, &x2, &y2);
+  gimp_drawable_mask_bounds(drawable->drawable_id, &x1, &y1, &x2, &y2);
 
-  bpp = gimp_drawable_bpp (drawable->drawable_id);
-  has_alpha = gimp_drawable_has_alpha (drawable->drawable_id);
-  alpha = (has_alpha) ? bpp - 1 : bpp;
+  bpp = gimp_drawable_bpp(drawable->drawable_id);
+  //has_alpha = gimp_drawable_has_alpha(drawable->drawable_id);
+  //alpha = (has_alpha) ? bpp - 1 : bpp;
 
-  ppm_kill (&brushppm);
-  ppm_new (&brushppm, x2 - x1, y2 - y1);
+  ppm_kill(&brushppm);
+  ppm_new(&brushppm, x2 - x1, y2 - y1);
   p = &brushppm;
 
-  rowstride = p->width * 3;
+  rowstride = p->width*3;
 
-  src_row = g_new (guchar, (x2 - x1) * bpp);
+  src_row = g_new(guchar, (x2 - x1)*bpp);
 
-  gimp_pixel_rgn_init (&src_rgn, drawable,
-                       0, 0, x2 - x1, y2 - y1,
-                       FALSE, FALSE);
+  gimp_pixel_rgn_init(&src_rgn, drawable, 0, 0, x2 - x1, y2 - y1, FALSE, FALSE);
 
-  if (bpp == 3)
-    { /* RGB */
-      int bpr = (x2 - x1) * 3;
+  if(bpp == 3)
+  { // RGB
+    int bpr = (x2 - x1)*3;
 
-      for (row = 0, y = y1; y < y2; row++, y++)
-        {
-          gimp_pixel_rgn_get_row (&src_rgn, src_row, x1, y, (x2 - x1));
-          memcpy (p->col + row*rowstride, src_row, bpr);
-        }
+    for(row = 0, y = y1; y < y2; row++, y++)
+    {
+      gimp_pixel_rgn_get_row(&src_rgn, src_row, x1, y, (x2 - x1));
+      memcpy(p->col + row*rowstride, src_row, bpr);
     }
+  }
   else
-    { /* RGBA (bpp > 3) GrayA (bpp == 2) or Gray */
-      gboolean is_gray = ((bpp > 3) ? TRUE : FALSE);
+  { // RGBA (bpp > 3) GrayA (bpp == 2) or Gray
+    gboolean is_gray = ((bpp > 3) ? TRUE : FALSE);
 
-      for (row = 0, y = y1; y < y2; row++, y++)
-        {
-          guchar *tmprow = p->col + row * rowstride;
-          guchar *tmprow_ptr;
+    for(row = 0, y = y1; y < y2; row++, y++)
+    {
+      guchar *tmprow = p->col + row*rowstride;
+      guchar *tmprow_ptr;
 
-          gimp_pixel_rgn_get_row (&src_rgn, src_row, x1, y, (x2 - x1));
-          src = src_row;
-          tmprow_ptr = tmprow;
-          /* Possible micro-optimization here:
-           * src_end = src + src_rgn.bpp * (x2-x1);
-           * for ( ; src < src_end ; src += src_rgn.bpp)
-           */
-          for (x = x1; x < x2; x++)
-            {
-              *(tmprow_ptr++) = src[0];
-              *(tmprow_ptr++) = src[is_gray ? 1 : 0];
-              *(tmprow_ptr++) = src[is_gray ? 2 : 0];
-              src += src_rgn.bpp;
-            }
-        }
+      gimp_pixel_rgn_get_row(&src_rgn, src_row, x1, y, (x2 - x1));
+      src = src_row;
+      tmprow_ptr = tmprow;
+      // Possible micro-optimization here:
+      // src_end = src + src_rgn.bpp * (x2-x1);
+      // for ( ; src < src_end ; src += src_rgn.bpp)
+      for(x = x1; x < x2; x++)
+      {
+        *(tmprow_ptr++) = src[0];
+        *(tmprow_ptr++) = src[is_gray ? 1 : 0];
+        *(tmprow_ptr++) = src[is_gray ? 2 : 0];
+        src += src_rgn.bpp;
+      }
     }
-  g_free (src_row);
+  }
+  g_free(src_row);
 
-  if (bpp >= 3)
-    pcvals.color_brushes = 1;
-  else
-    pcvals.color_brushes = 0;
+  if(bpp >= 3) pcvals.color_brushes = 1;
+  else pcvals.color_brushes = 0;
 
   brush_from_file = 0;
-  update_brush_preview (NULL);
+  update_brush_preview(NULL);
 }
 
 #if 0

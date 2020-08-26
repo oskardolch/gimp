@@ -77,7 +77,7 @@ jpeg_exif_data_new_from_file (const gchar  *filename,
   data = exif_data_new_from_data ((guchar *) g_mapped_file_get_contents (file),
                                   g_mapped_file_get_length (file));
 
-  g_mapped_file_free (file);
+  g_mapped_file_unref(file);
 
   return data;
 }

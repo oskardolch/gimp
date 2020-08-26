@@ -44,9 +44,7 @@ endif
 libgimpconfigincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimpconfig
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"LibGimpConfig\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"LibGimpConfig\" \
 	-I$(top_srcdir)	\
 	$(GLIB_CFLAGS)	\
 	-I$(includedir)

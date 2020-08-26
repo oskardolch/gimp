@@ -429,7 +429,7 @@ wave (guchar  *src,
   gint    x1_in, y1_in, x2_in, y2_in;
 
   gdouble xhsiz, yhsiz;       /* Half size of selection */
-  gdouble radius, radius2;    /* Radius and radius^2 */
+  //gdouble radius, radius2;    /* Radius and radius^2 */
   gdouble amnt, d;
   gdouble needx, needy;
   gdouble dx, dy;
@@ -476,8 +476,8 @@ wave (guchar  *src,
       yscale = 1.0;
     }
 
-  radius  = MAX (xhsiz, yhsiz);
-  radius2 = radius * radius;
+  //radius  = MAX (xhsiz, yhsiz);
+  //radius2 = radius * radius;
 
   /* Wave the image! */
 

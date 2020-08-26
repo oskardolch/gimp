@@ -141,20 +141,20 @@ run (const gchar      *name,
   if (status == GIMP_PDB_SUCCESS)
     {
       GimpDrawable *drawable;
-      gint32        image_ID;
+      //gint32        image_ID;
 
-      image_ID = param[1].data.d_int32;
-      drawable = gimp_drawable_get (param[2].data.d_drawable);
+      //image_ID = param[1].data.d_int32;
+      drawable = gimp_drawable_get(param[2].data.d_drawable);
 
-      gimp_progress_init (_("Antialiasing..."));
-      gimp_tile_cache_ntiles (2 * (drawable->width / gimp_tile_width () + 1));
+      gimp_progress_init(_("Antialiasing..."));
+      gimp_tile_cache_ntiles(2*(drawable->width/gimp_tile_width() + 1));
 
-      render (drawable);
+      render(drawable);
 
-      if (run_mode != GIMP_RUN_NONINTERACTIVE)
-        gimp_displays_flush ();
+      if(run_mode != GIMP_RUN_NONINTERACTIVE)
+        gimp_displays_flush();
 
-      gimp_drawable_detach (drawable);
+      gimp_drawable_detach(drawable);
     }
 
   values[0].type          = GIMP_PDB_STATUS;

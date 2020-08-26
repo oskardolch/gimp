@@ -36,7 +36,7 @@ color_rotate_SOURCES = \
 	color-rotate-stock.c		\
 	color-rotate-stock.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

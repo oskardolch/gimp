@@ -11,7 +11,10 @@ if OS_WIN32
 mwindows = -mwindows
 endif
 
-AM_CPPFLAGS = -DDATADIR=\""$(gimpdatadir)"\"
+AM_CPPFLAGS = -DDATADIR=\""$(gimpdatadir)"\" \
+	-I$(top_srcdir)	\
+	$(GIO_CFLAGS)	\
+	-I$(includedir)
 
 AM_LDFLAGS = $(mwindows)
 
@@ -36,11 +39,6 @@ libexecdir = $(gimpplugindir)/plug-ins
 libexec_PROGRAMS = help
 
 help_SOURCES = help.c
-
-INCLUDES = \
-	-I$(top_srcdir)	\
-	$(GIO_CFLAGS)	\
-	-I$(includedir)
 
 LDADD = \
 	$(libgimphelp)		\

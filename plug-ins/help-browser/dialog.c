@@ -32,7 +32,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include <webkit/webkit.h>
+#include <webkit2/webkit2.h>
 
 #include "libgimpwidgets/gimpwidgets.h"
 
@@ -809,7 +809,7 @@ static void
 copy_location_callback (GtkAction *action,
                         gpointer   data)
 {
-  WebKitWebFrame *frame;
+  WebKitWebView *frame;
   const gchar    *uri;
 
   frame = webkit_web_view_get_main_frame (WEBKIT_WEB_VIEW (view));
@@ -901,10 +901,10 @@ build_menu (const GList *items,
 
   for (iter = items, steps = 1; iter; iter = g_list_next (iter), steps++)
     {
-      WebKitWebHistoryItem *item = iter->data;
+      WebKitBackForwardListItem *item = iter->data;
       const gchar          *title;
 
-      title = webkit_web_history_item_get_title (item);
+      title = webkit_back_forward_list_item_get_title (item);
 
       if (title)
         {
@@ -926,8 +926,8 @@ static void
 update_actions (void)
 {
   GtkAction                *action;
-  WebKitWebBackForwardList *back_forward_list;
-  WebKitWebFrame           *frame;
+  WebKitBackForwardList    *back_forward_list;
+  WebKitWebView            *frame;
 
   back_forward_list =
     webkit_web_view_get_back_forward_list (WEBKIT_WEB_VIEW (view));
@@ -1094,7 +1094,7 @@ static gboolean
 view_key_press (GtkWidget   *widget,
                 GdkEventKey *event)
 {
-  if (event->keyval == GDK_slash)
+  if (event->keyval == GDK_KEY_slash)
     {
       GtkAction *action;
 
@@ -1110,7 +1110,7 @@ view_key_press (GtkWidget   *widget,
 
 static void
 title_changed (GtkWidget      *view,
-               WebKitWebFrame *frame,
+               WebKitWebView *frame,
                const gchar    *title,
                GtkWidget      *window)
 {
@@ -1128,7 +1128,7 @@ title_changed (GtkWidget      *view,
 
 static void
 load_started (GtkWidget      *view,
-              WebKitWebFrame *frame)
+              WebKitWebView *frame)
 {
   GtkAction *action = gtk_ui_manager_get_action (ui_manager,
                                                  "/ui/help-browser-popup/stop");
@@ -1137,7 +1137,7 @@ load_started (GtkWidget      *view,
 
 static void
 load_finished (GtkWidget      *view,
-               WebKitWebFrame *frame)
+               WebKitWebView *frame)
 {
   GtkAction *action = gtk_ui_manager_get_action (ui_manager,
                                                  "/ui/help-browser-popup/stop");
@@ -1229,14 +1229,14 @@ search_entry_key_press (GtkWidget   *entry,
 {
   switch (event->keyval)
     {
-    case GDK_Escape:
+    case GDK_KEY_Escape:
       gtk_widget_hide (searchbar);
       webkit_web_view_unmark_text_matches (WEBKIT_WEB_VIEW (view));
       return TRUE;
 
-    case GDK_Return:
-    case GDK_KP_Enter:
-    case GDK_ISO_Enter:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+    case GDK_KEY_ISO_Enter:
       search (gtk_entry_get_text (GTK_ENTRY (entry)), TRUE);
       return TRUE;
     }

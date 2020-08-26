@@ -1300,7 +1300,7 @@ calclight (GimpVector4 * col, GimpVector4 * point, common * obj)
 {
   gint i, j;
   ray r;
-  gdouble d, b, a;
+  gdouble b, a;
   GimpVector4 lcol;
   GimpVector4 norm;
   GimpVector4 pcol;
@@ -1344,7 +1344,7 @@ calclight (GimpVector4 * col, GimpVector4 * point, common * obj)
       vcopy (&r.v1, point);
       vcopy (&r.v2, &world.light[i].a);
       vmix (&r.v1, &r.v1, &r.v2, 0.9999);
-      d = vdist (&r.v1, &r.v2);
+      //gdouble d = vdist (&r.v1, &r.v2);
 
       vsub (&r.v1, &r.v2);
       vnorm (&r.v1, 1.0);
@@ -1380,7 +1380,7 @@ calcphong (common * obj, ray * r2, GimpVector4 * col)
 {
   gint    i, j, o;
   ray     r;
-  gdouble d, b;
+  gdouble b;
   GimpVector4  lcol;
   GimpVector4  norm;
   GimpVector4  pcol;
@@ -1400,7 +1400,7 @@ calcphong (common * obj, ray * r2, GimpVector4 * col)
       vcopy (&r.v1, &r2->v1);
       vcopy (&r.v2, &world.light[i].a);
       vmix (&r.v1, &r.v1, &r.v2, 0.9999);
-      d = vdist (&r.v1, &r.v2);
+      //gdouble d = vdist (&r.v1, &r.v2);
 
       o = traceray (&r, NULL, -1, 1.0);
       if (o)
@@ -1438,7 +1438,7 @@ traceray (ray * r, GimpVector4 * col, gint level, gdouble imp)
 {
   gint     i, b = -1;
   gdouble  t = -1.0, min = 0.0;
-  gint     type = -1;
+  //gint     type = -1;
   common  *obj, *bobj = NULL;
   gint     hits = 0;
   GimpVector4   p;
@@ -1486,7 +1486,7 @@ traceray (ray * r, GimpVector4 * col, gint level, gdouble imp)
 
           min = t;
           b = i;
-          type = obj->type;
+          //type = obj->type;
           bobj = obj;
         }
     }
@@ -2878,7 +2878,7 @@ render (void)
   guchar *dest_row;
   ray     r;
   gint    x, y, p;
-  gint    hit;
+  //gint    hit;
   gint    tx  = PREVIEWSIZE;
   gint    ty  = PREVIEWSIZE;
   gint    bpp = 3;
@@ -2907,7 +2907,8 @@ render (void)
 
               p = x * bpp;
 
-              hit = traceray (&r, &col, 10, 1.0);
+              //gint hit = 
+              traceray (&r, &col, 10, 1.0);
 
               if (col.w < 0.0)
                 col.w = 0.0;

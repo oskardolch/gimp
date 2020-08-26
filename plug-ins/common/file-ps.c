@@ -1794,8 +1794,6 @@ ps_close (FILE *ifp, gint ChildPid)
 {
 
 #ifndef USE_REAL_OUTPUTFILE
-  int status;
-  pid_t RetVal;
 
   /* Enabling the code below causes us to read the pipe until EOF even
    * if we dont want all images. Should be enabled if people report that
@@ -1806,6 +1804,8 @@ ps_close (FILE *ifp, gint ChildPid)
   guchar buf[8192];
 
 #ifdef PS_DEBUG
+  int status;
+  pid_t RetVal;
   g_print ("Reading rest from pipe\n");
 #endif
 
@@ -1820,11 +1820,9 @@ ps_close (FILE *ifp, gint ChildPid)
     {
 #ifdef PS_DEBUG
     g_print ("Waiting for %d to finish\n", (int)ChildPid);
-#endif
 
     RetVal = waitpid (ChildPid, &status, 0);
 
-#ifdef PS_DEBUG
     if (RetVal == -1)
       g_print ("waitpid() failed\n");
     else
@@ -2171,7 +2169,7 @@ save_ps_setup (FILE   *ofp,
 {
   double x_offset, y_offset, x_size, y_size;
   double urx, ury;
-  double x_scale, y_scale;
+  //double x_scale, y_scale;
   double width_inch, height_inch;
   double f1, f2, dx, dy;
   int xtrans, ytrans;
@@ -2243,8 +2241,8 @@ save_ps_setup (FILE   *ofp,
     case   0: dx = 0.0; dy = y_size*72.0;
       break;
     case  90: dx = dy = 0.0;
-      x_scale = 72.0 * width_inch;
-      y_scale = -72.0 * height_inch;
+      //x_scale = 72.0 * width_inch;
+      //y_scale = -72.0 * height_inch;
       break;
     case 180: dx = x_size*72.0; dy = 0.0;
       break;
@@ -2438,7 +2436,7 @@ save_ps_preview (FILE   *ofp,
                        drawable->height, FALSE, FALSE);
 
   cmap = NULL;     /* Check if we need a colour table */
-  if (gimp_drawable_type (drawable_ID) == GIMP_INDEXED_IMAGE)
+  if (drawable_type == GIMP_INDEXED_IMAGE)
     cmap = gimp_image_get_colormap (gimp_drawable_get_image (drawable_ID),
                                     &ncols);
 
@@ -2519,12 +2517,12 @@ save_gray  (FILE   *ofp,
   unsigned char *packb = NULL;
   GimpPixelRgn pixel_rgn;
   GimpDrawable *drawable;
-  GimpImageType drawable_type;
+  //GimpImageType drawable_type;
   static char *hex = "0123456789abcdef";
   int level2 = (psvals.level > 1);
 
   drawable = gimp_drawable_get (drawable_ID);
-  drawable_type = gimp_drawable_type (drawable_ID);
+  //drawable_type = gimp_drawable_type (drawable_ID);
   width = drawable->width;
   height = drawable->height;
   tile_height = gimp_tile_height ();
@@ -2623,14 +2621,14 @@ save_bw (FILE   *ofp,
   guchar *hex_scanline;
   GimpPixelRgn pixel_rgn;
   GimpDrawable *drawable;
-  GimpImageType drawable_type;
+  //GimpImageType drawable_type;
   static char *hex = "0123456789abcdef";
   gint level2 = (psvals.level > 1);
 
   cmap = gimp_image_get_colormap (image_ID, &ncols);
 
   drawable = gimp_drawable_get (drawable_ID);
-  drawable_type = gimp_drawable_type (drawable_ID);
+  //drawable_type = gimp_drawable_type (drawable_ID);
   width = drawable->width;
   height = drawable->height;
   tile_height = gimp_tile_height ();
@@ -2755,7 +2753,7 @@ save_index (FILE   *ofp,
   char coltab[256*6], *ct;
   GimpPixelRgn pixel_rgn;
   GimpDrawable *drawable;
-  GimpImageType drawable_type;
+  //GimpImageType drawable_type;
   static char *hex = "0123456789abcdef";
   static char *background = "000000";
   int level2 = (psvals.level > 1);
@@ -2787,7 +2785,7 @@ save_index (FILE   *ofp,
     return (save_bw (ofp, image_ID, drawable_ID));
 
   drawable = gimp_drawable_get (drawable_ID);
-  drawable_type = gimp_drawable_type (drawable_ID);
+  //drawable_type = gimp_drawable_type (drawable_ID);
   width = drawable->width;
   height = drawable->height;
   tile_height = gimp_tile_height ();
@@ -2904,12 +2902,12 @@ save_rgb (FILE   *ofp,
   guchar *packb = NULL, *plane = NULL;
   GimpPixelRgn pixel_rgn;
   GimpDrawable *drawable;
-  GimpImageType drawable_type;
+  //GimpImageType drawable_type;
   static char *hex = "0123456789abcdef";
   int level2 = (psvals.level > 1);
 
   drawable = gimp_drawable_get (drawable_ID);
-  drawable_type = gimp_drawable_type (drawable_ID);
+  //drawable_type = gimp_drawable_type (drawable_ID);
   width = drawable->width;
   height = drawable->height;
   tile_height = gimp_tile_height ();
@@ -3070,9 +3068,7 @@ count_ps_pages (const gchar *filename)
   return num_pages;
 }
 
-static gboolean
-load_dialog (const gchar *filename,
-             gboolean     loadPDF)
+static gboolean load_dialog(const gchar *filename, gboolean loadPDF)
 {
   GtkWidget *dialog;
   GtkWidget *main_vbox;
@@ -3089,212 +3085,147 @@ load_dialog (const gchar *filename,
   gint32     page_count;
   gchar     *range    = NULL;
   gboolean   run;
+  size_t     rlen;
 
-  page_count = count_ps_pages (filename);
+  page_count = count_ps_pages(filename);
 
-  gimp_ui_init (PLUG_IN_BINARY, FALSE);
+  gimp_ui_init(PLUG_IN_BINARY, FALSE);
 
-  dialog = gimp_dialog_new (_("Import from PostScript"), PLUG_IN_BINARY,
-                            NULL, 0,
-                            gimp_standard_help_func, LOAD_PS_PROC,
+  dialog = gimp_dialog_new(_("Import from PostScript"), PLUG_IN_BINARY, NULL, 0, gimp_standard_help_func, LOAD_PS_PROC,
+    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, _("_Import"), GTK_RESPONSE_OK, NULL);
+  gtk_dialog_set_alternative_button_order(GTK_DIALOG(dialog), GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1);
+  gimp_window_set_transient(GTK_WINDOW(dialog));
 
-                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                            _("_Import"),     GTK_RESPONSE_OK,
+  main_vbox = gtk_vbox_new(FALSE, 12);
+  gtk_container_set_border_width(GTK_CONTAINER(main_vbox), 12);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), main_vbox, TRUE, TRUE, 0);
+  gtk_widget_show(main_vbox);
 
-                            NULL);
+  if(page_count > 1)
+  {
+    selector = gimp_page_selector_new();
+    gtk_box_pack_start(GTK_BOX(main_vbox), selector, TRUE, TRUE, 0);
+    gimp_page_selector_set_n_pages(GIMP_PAGE_SELECTOR(selector), page_count);
+    gimp_page_selector_set_target(GIMP_PAGE_SELECTOR(selector), ps_pagemode);
+    gtk_widget_show(selector);
+    g_signal_connect_swapped(selector, "activate", G_CALLBACK(gtk_window_activate_default), dialog);
+  }
 
-  gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
-                                           GTK_RESPONSE_OK,
-                                           GTK_RESPONSE_CANCEL,
-                                           -1);
+  hbox = gtk_hbox_new(TRUE, 12);
+  gtk_box_pack_start(GTK_BOX(main_vbox), hbox, FALSE, FALSE, 0);
+  gtk_widget_show(hbox);
 
-  gimp_window_set_transient (GTK_WINDOW (dialog));
+  // Rendering
+  frame = gimp_frame_new(_("Rendering"));
+  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, TRUE, 0);
 
-  main_vbox = gtk_vbox_new (FALSE, 12);
-  gtk_container_set_border_width (GTK_CONTAINER (main_vbox), 12);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), main_vbox,
-                      TRUE, TRUE, 0);
-  gtk_widget_show (main_vbox);
+  vbox = gtk_vbox_new(FALSE, 6);
+  gtk_container_add(GTK_CONTAINER(frame), vbox);
 
-  if (page_count > 1)
+  // Resolution/Width/Height/Pages labels
+  table = gtk_table_new(4, 2, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(table), 6);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 6);
+  gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, FALSE, 0);
+  gtk_widget_show(table);
+
+  spinbutton = gimp_spin_button_new(&adj, plvals.resolution, 5, 1440, 1, 10, 0, 1, 0);
+  gimp_table_attach_aligned(GTK_TABLE(table), 0, 0, _("Resolution:"), 0.0, 0.5, spinbutton, 1, FALSE);
+
+  g_signal_connect(adj, "value-changed", G_CALLBACK(resolution_change_callback), &plvals.resolution);
+  g_signal_connect(adj, "value-changed", G_CALLBACK(gimp_int_adjustment_update), &plvals.resolution);
+
+  ps_width_spinbutton = gimp_spin_button_new(&adj, plvals.width, 1, GIMP_MAX_IMAGE_SIZE, 1, 10, 0, 1, 0);
+  gimp_table_attach_aligned(GTK_TABLE(table), 0, 1, _("_Width:"), 0.0, 0.5, ps_width_spinbutton, 1, FALSE);
+  g_signal_connect(adj, "value-changed", G_CALLBACK(gimp_int_adjustment_update), &plvals.width);
+
+  ps_height_spinbutton = gimp_spin_button_new(&adj, plvals.height, 1, GIMP_MAX_IMAGE_SIZE, 1, 10, 0, 1, 0);
+  gimp_table_attach_aligned(GTK_TABLE(table), 0, 2, _("_Height:"), 0.0, 0.5, ps_height_spinbutton, 1, FALSE);
+  g_signal_connect(adj, "value-changed", G_CALLBACK(gimp_int_adjustment_update), &plvals.height);
+
+  if(loadPDF || page_count == 0)
+  {
+    entry = gtk_entry_new();
+    gtk_widget_set_size_request(entry, 80, -1);
+    gtk_entry_set_text(GTK_ENTRY(entry), plvals.pages);
+    gimp_table_attach_aligned(GTK_TABLE(table), 0, 3, _("Pages:"), 0.0, 0.5, entry, 1, FALSE);
+
+    g_signal_connect(entry, "changed", G_CALLBACK(load_pages_entry_callback), NULL);
+    gimp_help_set_help_data(GTK_WIDGET(entry), _("Pages to load (e.g.: 1-4 or 1,3,5-7)"), NULL);
+
+    target = gtk_combo_box_new_text();
+    gtk_combo_box_insert_text(GTK_COMBO_BOX(target), GIMP_PAGE_SELECTOR_TARGET_LAYERS, _("Layers"));
+    gtk_combo_box_insert_text(GTK_COMBO_BOX(target), GIMP_PAGE_SELECTOR_TARGET_IMAGES, _("Images"));
+    gtk_combo_box_set_active(GTK_COMBO_BOX(target), (int)ps_pagemode);
+    gimp_table_attach_aligned(GTK_TABLE(table), 0, 4, _("Open as"), 0.0, 0.5, target, 1, FALSE);
+  }
+
+  toggle = gtk_check_button_new_with_label(_("Try Bounding Box"));
+  gtk_box_pack_start(GTK_BOX(vbox), toggle, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle), plvals.use_bbox);
+  gtk_widget_show(toggle);
+
+  g_signal_connect(toggle, "toggled", G_CALLBACK(gimp_toggle_button_update), &plvals.use_bbox);
+
+  gtk_widget_show(vbox);
+  gtk_widget_show(frame);
+
+  // Colouring
+  frame = gimp_int_radio_group_new(TRUE, _("Coloring"), G_CALLBACK(gimp_radio_button_update),
+    &plvals.pnm_type, plvals.pnm_type, _("B/W"),
+    4, NULL, _("Gray"), 5, NULL, _("Color"), 6, NULL, _("Automatic"), 7, NULL, NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, TRUE, 0);
+  gtk_widget_show(frame);
+
+  hbox = gtk_hbox_new(TRUE, 12);
+  gtk_box_pack_start(GTK_BOX(main_vbox), hbox, FALSE, FALSE, 0);
+  gtk_widget_show(hbox);
+
+  frame = gimp_int_radio_group_new(TRUE, _("Text antialiasing"), G_CALLBACK(gimp_radio_button_update),
+    &plvals.textalpha, plvals.textalpha,
+    _("None"), 1, NULL, _("Weak"), 2, NULL, _("Strong"), 4, NULL, NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, TRUE, 0);
+  gtk_widget_show(frame);
+
+  frame = gimp_int_radio_group_new(TRUE, _("Graphic antialiasing"), G_CALLBACK(gimp_radio_button_update),
+    &plvals.graphicsalpha, plvals.graphicsalpha,
+    _("None"), 1, NULL, _("Weak"), 2, NULL, _("Strong"), 4, NULL, NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, TRUE, 0);
+  gtk_widget_show(frame);
+
+  gtk_widget_show(dialog);
+
+  run = (gimp_dialog_run(GIMP_DIALOG(dialog)) == GTK_RESPONSE_OK);
+
+  if(selector)
+  {
+    range = gimp_page_selector_get_selected_range(GIMP_PAGE_SELECTOR(selector));
+    rlen = strlen(range);
+
+    if(rlen < 1)
     {
-      selector = gimp_page_selector_new ();
-      gtk_box_pack_start (GTK_BOX (main_vbox), selector, TRUE, TRUE, 0);
-      gimp_page_selector_set_n_pages (GIMP_PAGE_SELECTOR (selector),
-                                      page_count);
-      gimp_page_selector_set_target (GIMP_PAGE_SELECTOR (selector),
-                                     ps_pagemode);
-
-      gtk_widget_show (selector);
-
-      g_signal_connect_swapped (selector, "activate",
-                                G_CALLBACK (gtk_window_activate_default),
-                                dialog);
+      gimp_page_selector_select_all(GIMP_PAGE_SELECTOR(selector));
+      range = gimp_page_selector_get_selected_range(GIMP_PAGE_SELECTOR(selector));
+      rlen = strlen(range);
     }
 
-  hbox = gtk_hbox_new (TRUE, 12);
-  gtk_box_pack_start (GTK_BOX (main_vbox), hbox, FALSE, FALSE, 0);
-  gtk_widget_show (hbox);
+    if(rlen > sizeof(plvals.pages)) rlen = sizeof(plvals.pages);
 
-  /* Rendering */
-  frame = gimp_frame_new (_("Rendering"));
-  gtk_box_pack_start (GTK_BOX (hbox), frame, FALSE, TRUE, 0);
+    strncpy(plvals.pages, range, rlen);
+    plvals.pages[rlen] = '\0';
 
-  vbox = gtk_vbox_new (FALSE, 6);
-  gtk_container_add (GTK_CONTAINER (frame), vbox);
-
-  /* Resolution/Width/Height/Pages labels */
-  table = gtk_table_new (4, 2, FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 6);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 6);
-  gtk_box_pack_start (GTK_BOX (vbox), table, FALSE, FALSE, 0);
-  gtk_widget_show (table);
-
-  spinbutton = gimp_spin_button_new (&adj, plvals.resolution,
-                                     5, 1440, 1, 10, 0, 1, 0);
-  gimp_table_attach_aligned (GTK_TABLE (table), 0, 0,
-                             _("Resolution:"), 0.0, 0.5,
-                             spinbutton, 1, FALSE);
-
-  g_signal_connect (adj, "value-changed",
-                    G_CALLBACK (resolution_change_callback),
-                    &plvals.resolution);
-
-  g_signal_connect (adj, "value-changed",
-                    G_CALLBACK (gimp_int_adjustment_update),
-                    &plvals.resolution);
-
-
-
-  ps_width_spinbutton = gimp_spin_button_new (&adj, plvals.width,
-                                              1, GIMP_MAX_IMAGE_SIZE,
-                                              1, 10, 0, 1, 0);
-  gimp_table_attach_aligned (GTK_TABLE (table), 0, 1,
-                             _("_Width:"), 0.0, 0.5,
-                             ps_width_spinbutton, 1, FALSE);
-  g_signal_connect (adj, "value-changed",
-                    G_CALLBACK (gimp_int_adjustment_update),
-                    &plvals.width);
-
-  ps_height_spinbutton = gimp_spin_button_new (&adj, plvals.height,
-                                               1, GIMP_MAX_IMAGE_SIZE,
-                                               1, 10, 0, 1, 0);
-  gimp_table_attach_aligned (GTK_TABLE (table), 0, 2,
-                             _("_Height:"), 0.0, 0.5,
-                             ps_height_spinbutton, 1, FALSE);
-  g_signal_connect (adj, "value-changed",
-                    G_CALLBACK (gimp_int_adjustment_update),
-                    &plvals.height);
-
-  if (loadPDF || page_count == 0)
-    {
-      entry = gtk_entry_new ();
-      gtk_widget_set_size_request (entry, 80, -1);
-      gtk_entry_set_text (GTK_ENTRY (entry), plvals.pages);
-      gimp_table_attach_aligned (GTK_TABLE (table), 0, 3,
-                                 _("Pages:"), 0.0, 0.5,
-                                 entry, 1, FALSE);
-
-      g_signal_connect (entry, "changed",
-                        G_CALLBACK (load_pages_entry_callback),
-                        NULL);
-      gimp_help_set_help_data (GTK_WIDGET (entry),
-                               _("Pages to load (e.g.: 1-4 or 1,3,5-7)"), NULL);
-
-      target = gtk_combo_box_new_text ();
-      gtk_combo_box_insert_text (GTK_COMBO_BOX (target),
-                                 GIMP_PAGE_SELECTOR_TARGET_LAYERS, _("Layers"));
-      gtk_combo_box_insert_text (GTK_COMBO_BOX (target),
-                                 GIMP_PAGE_SELECTOR_TARGET_IMAGES, _("Images"));
-      gtk_combo_box_set_active (GTK_COMBO_BOX (target), (int) ps_pagemode);
-      gimp_table_attach_aligned (GTK_TABLE (table), 0, 4,
-                                 _("Open as"), 0.0, 0.5,
-                                 target, 1, FALSE);
-    }
-
-  toggle = gtk_check_button_new_with_label (_("Try Bounding Box"));
-  gtk_box_pack_start (GTK_BOX (vbox), toggle, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (toggle), plvals.use_bbox);
-  gtk_widget_show (toggle);
-
-  g_signal_connect (toggle, "toggled",
-                    G_CALLBACK (gimp_toggle_button_update),
-                    &plvals.use_bbox);
-
-  gtk_widget_show (vbox);
-  gtk_widget_show (frame);
-
-  /* Colouring */
-  frame = gimp_int_radio_group_new (TRUE, _("Coloring"),
-                                    G_CALLBACK (gimp_radio_button_update),
-                                    &plvals.pnm_type, plvals.pnm_type,
-
-                                    _("B/W"),       4, NULL,
-                                    _("Gray"),      5, NULL,
-                                    _("Color"),     6, NULL,
-                                    _("Automatic"), 7, NULL,
-
-                                    NULL);
-  gtk_box_pack_start (GTK_BOX (hbox), frame, FALSE, TRUE, 0);
-  gtk_widget_show (frame);
-
-  hbox = gtk_hbox_new (TRUE, 12);
-  gtk_box_pack_start (GTK_BOX (main_vbox), hbox, FALSE, FALSE, 0);
-  gtk_widget_show (hbox);
-
-  frame = gimp_int_radio_group_new (TRUE, _("Text antialiasing"),
-                                    G_CALLBACK (gimp_radio_button_update),
-                                    &plvals.textalpha, plvals.textalpha,
-
-                                    _("None"),   1, NULL,
-                                    _("Weak"),   2, NULL,
-                                    _("Strong"), 4, NULL,
-
-                                    NULL);
-  gtk_box_pack_start (GTK_BOX (hbox), frame, FALSE, TRUE, 0);
-  gtk_widget_show (frame);
-
-  frame = gimp_int_radio_group_new (TRUE, _("Graphic antialiasing"),
-                                    G_CALLBACK (gimp_radio_button_update),
-                                    &plvals.graphicsalpha, plvals.graphicsalpha,
-
-                                    _("None"),   1, NULL,
-                                    _("Weak"),   2, NULL,
-                                    _("Strong"), 4, NULL,
-
-                                    NULL);
-  gtk_box_pack_start (GTK_BOX (hbox), frame, FALSE, TRUE, 0);
-  gtk_widget_show (frame);
-
-  gtk_widget_show (dialog);
-
-  run = (gimp_dialog_run (GIMP_DIALOG (dialog)) == GTK_RESPONSE_OK);
-
-  if (selector)
-    {
-      range = gimp_page_selector_get_selected_range (GIMP_PAGE_SELECTOR (selector));
-
-      if (strlen (range) < 1)
-        {
-          gimp_page_selector_select_all (GIMP_PAGE_SELECTOR (selector));
-          range = gimp_page_selector_get_selected_range (GIMP_PAGE_SELECTOR (selector));
-        }
-
-      strncpy (plvals.pages, range, sizeof (plvals.pages));
-      plvals.pages[strlen (range)] = '\0';
-
-      ps_pagemode = gimp_page_selector_get_target (GIMP_PAGE_SELECTOR (selector));
-    }
-  else if (loadPDF || page_count == 0)
-    {
-      ps_pagemode = gtk_combo_box_get_active (GTK_COMBO_BOX (target));
-    }
+    ps_pagemode = gimp_page_selector_get_target(GIMP_PAGE_SELECTOR(selector));
+  }
+  else if(loadPDF || page_count == 0)
+  {
+    ps_pagemode = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
+  }
   else
-    {
-      strncpy (plvals.pages, "1", 1);
-      plvals.pages[1] = '\0';
-      ps_pagemode = GIMP_PAGE_SELECTOR_TARGET_IMAGES;
-    }
+  {
+    strncpy(plvals.pages, "1", 1);
+    plvals.pages[1] = '\0';
+    ps_pagemode = GIMP_PAGE_SELECTOR_TARGET_IMAGES;
+  }
 
   gtk_widget_destroy (dialog);
 

@@ -33,20 +33,15 @@
 #include "gimpdialogfactory.h"
 #include "gimptooldialog.h"
 
-
 G_DEFINE_TYPE (GimpToolDialog, gimp_tool_dialog, GIMP_TYPE_VIEWABLE_DIALOG)
 
-
-static void
-gimp_tool_dialog_class_init (GimpToolDialogClass *klass)
+static void gimp_tool_dialog_class_init(GimpToolDialogClass *klass)
 {
 }
 
-static void
-gimp_tool_dialog_init (GimpToolDialog *dialog)
+static void gimp_tool_dialog_init(GimpToolDialog *dialog)
 {
 }
-
 
 /**
  * gimp_tool_dialog_new:
@@ -63,43 +58,32 @@ gimp_tool_dialog_init (GimpToolDialog *dialog)
  *
  * Return value: a new #GimpViewableDialog
  **/
-GtkWidget *
-gimp_tool_dialog_new (GimpToolInfo *tool_info,
-                      GtkWidget    *parent,
-                      const gchar  *desc,
-                      ...)
+GtkWidget* gimp_tool_dialog_new(GimpToolInfo *tool_info, GtkWidget *parent, const gchar *desc, ...)
 {
   GtkWidget   *dialog;
   const gchar *stock_id;
   gchar       *identifier;
   va_list      args;
 
-  g_return_val_if_fail (GIMP_IS_TOOL_INFO (tool_info), NULL);
-  g_return_val_if_fail (parent == NULL || GTK_IS_WIDGET (parent), NULL);
+  g_return_val_if_fail(GIMP_IS_TOOL_INFO(tool_info), NULL);
+  g_return_val_if_fail(parent == NULL || GTK_IS_WIDGET(parent), NULL);
 
   stock_id = gimp_viewable_get_stock_id (GIMP_VIEWABLE (tool_info));
 
-  dialog = g_object_new (GIMP_TYPE_TOOL_DIALOG,
-                         "title",        tool_info->blurb,
-                         "role",         GIMP_OBJECT (tool_info)->name,
-                         "help-func",    gimp_standard_help_func,
-                         "help-id",      tool_info->help_id,
-                         "stock-id",     stock_id,
-                         "description",  desc ? desc : tool_info->help,
-                         "parent",       parent,
-                         NULL);
+  dialog = g_object_new(GIMP_TYPE_TOOL_DIALOG, "title", tool_info->blurb, "role", GIMP_OBJECT(tool_info)->name,
+    "help-func", gimp_standard_help_func, "help-id", tool_info->help_id, "stock-id", stock_id,
+    "description", desc ? desc : tool_info->help, "parent", parent, NULL);
 
-  va_start (args, desc);
-  gimp_dialog_add_buttons_valist (GIMP_DIALOG (dialog), args);
-  va_end (args);
+  va_start(args, desc);
+  gimp_dialog_add_buttons_valist(GIMP_DIALOG(dialog), args);
+  va_end(args);
 
-  identifier = g_strconcat (GIMP_OBJECT (tool_info)->name, "-dialog", NULL);
+  identifier = g_strconcat(GIMP_OBJECT(tool_info)->name, "-dialog", NULL);
 
-  gimp_dialog_factory_add_foreign (gimp_dialog_factory_from_name ("toplevel"),
-                                   identifier,
-                                   dialog);
+  gimp_dialog_factory_add_foreign(gimp_dialog_factory_from_name("toplevel"), identifier, dialog);
 
-  g_free (identifier);
+  g_free(identifier);
 
   return dialog;
 }
+

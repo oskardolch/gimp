@@ -1352,11 +1352,7 @@ load_resource_1060 (const PSDimageres  *res_a,
   return 0;
 }
 
-static gint
-load_resource_2000 (const PSDimageres  *res_a,
-                    const gint32        image_id,
-                    FILE               *f,
-                    GError            **error)
+static gint load_resource_2000(const PSDimageres *res_a, const gint32 image_id, FILE *f, GError **error)
 {
   gdouble      *controlpoints;
   gint32        x[3];
@@ -1371,178 +1367,160 @@ load_resource_2000 (const PSDimageres  *res_a,
   gint          image_height;
   gint          i;
   gboolean      closed;
-  gboolean      fill;
+  //gboolean      fill;
 
-  /* Load path data from image resources 2000-2998 */
+  // Load path data from image resources 2000-2998
+  IFDBG(2) g_debug("Process image resource block: %d :Path data", res_a->id);
+  path_rec = res_a->data_len/26;
+  if(path_rec ==0) return 0;
 
-  IFDBG(2) g_debug ("Process image resource block: %d :Path data", res_a->id);
-  path_rec = res_a->data_len / 26;
-  if (path_rec ==0)
-    return 0;
+  if(fread(&type, 2, 1, f) < 1)
+  {
+    psd_set_error(feof(f), errno, error);
+    return -1;
+  }
+  type = GINT16_FROM_BE(type);
+  if(type != PSD_PATH_FILL_RULE)
+  {
+    IFDBG(1) g_debug("Unexpected path record type: %d", type);
+    return -1;
+  }
+  //else fill = FALSE;
 
-  if (fread (&type, 2, 1, f) < 1)
-    {
-      psd_set_error (feof (f), errno, error);
-      return -1;
-    }
-  type = GINT16_FROM_BE (type);
-  if (type != PSD_PATH_FILL_RULE)
-    {
-      IFDBG(1) g_debug ("Unexpected path record type: %d", type);
-      return -1;
-    }
-  else
-    fill = FALSE;
-
-  if (fseek (f, 24, SEEK_CUR) < 0)
-    {
-      psd_set_error (feof (f), errno, error);
-      return -1;
-    }
+  if(fseek(f, 24, SEEK_CUR) < 0)
+  {
+    psd_set_error(feof(f), errno, error);
+    return -1;
+  }
 
   path_rec--;
-  if (path_rec ==0)
-    return 0;
+  if(path_rec ==0) return 0;
 
-  image_width = gimp_image_width (image_id);
-  image_height = gimp_image_height (image_id);
+  image_width = gimp_image_width(image_id);
+  image_height = gimp_image_height(image_id);
 
-  /* Create path */
-  vector_id = gimp_vectors_new (image_id, res_a->name);
-  gimp_image_add_vectors (image_id, vector_id, -1);
+  // Create path
+  vector_id = gimp_vectors_new(image_id, res_a->name);
+  gimp_image_add_vectors(image_id, vector_id, -1);
 
-  while (path_rec > 0)
+  while(path_rec > 0)
+  {
+    if(fread(&type, 2, 1, f) < 1)
     {
-      if (fread (&type, 2, 1, f) < 1)
+      psd_set_error(feof(f), errno, error);
+      return -1;
+    }
+    type = GINT16_FROM_BE(type);
+    IFDBG(3) g_debug("Path record type %d", type);
+
+    if(type == PSD_PATH_FILL_RULE)
+    {
+      //fill = FALSE;
+      if(fseek(f, 24, SEEK_CUR) < 0)
+      {
+        psd_set_error(feof(f), errno, error);
+        return -1;
+      }
+    }
+    else if(type == PSD_PATH_FILL_INIT)
+    {
+      if(fread(&init_fill, 2, 1, f) < 1)
+      {
+        psd_set_error(feof(f), errno, error);
+        return -1;
+      }
+      //if(init_fill != 0) fill = TRUE;
+
+      if(fseek(f, 22, SEEK_CUR) < 0)
+      {
+        psd_set_error(feof(f), errno, error);
+        return -1;
+      }
+    }
+    else if(type == PSD_PATH_CL_LEN || type == PSD_PATH_OP_LEN)
+    {
+      if(fread(&num_rec, 2, 1, f) < 1)
+      {
+        psd_set_error(feof(f), errno, error);
+        return -1;
+      }
+      num_rec = GINT16_FROM_BE(num_rec);
+      if(num_rec > path_rec)
+      {
+        psd_set_error(feof(f), errno, error);
+        return - 1;
+      }
+      IFDBG(3) g_debug("Num path records %d", num_rec);
+
+      if(type == PSD_PATH_CL_LEN) closed = TRUE;
+      else closed = FALSE;
+      cntr = 0;
+      controlpoints = g_malloc(sizeof(gdouble)*num_rec*6);
+      if(fseek(f, 22, SEEK_CUR) < 0)
+      {
+        psd_set_error(feof(f), errno, error);
+        return -1;
+      }
+
+      while(num_rec > 0)
+      {
+        if(fread(&type, 2, 1, f) < 1)
         {
-          psd_set_error (feof (f), errno, error);
+          psd_set_error(feof(f), errno, error);
           return -1;
         }
-      type = GINT16_FROM_BE (type);
-      IFDBG(3) g_debug ("Path record type %d", type);
+        type = GINT16_FROM_BE (type);
+        IFDBG(3) g_debug ("Path record type %d", type);
 
-      if (type == PSD_PATH_FILL_RULE)
+        if(type == PSD_PATH_CL_LNK || type == PSD_PATH_CL_UNLNK || type == PSD_PATH_OP_LNK || type == PSD_PATH_OP_UNLNK)
         {
-          fill = FALSE;
-          if (fseek (f, 24, SEEK_CUR) < 0)
-            {
-              psd_set_error (feof (f), errno, error);
-              return -1;
-            }
+          if(fread(&y[0], 4, 1, f) < 1 || fread(&x[0], 4, 1, f) < 1 || fread(&y[1], 4, 1, f) < 1 ||
+            fread(&x[1], 4, 1, f) < 1 || fread(&y[2], 4, 1, f) < 1 || fread(&x[2], 4, 1, f) < 1)
+          {
+            psd_set_error(feof(f), errno, error);
+            return -1;
+          }
+          for(i = 0; i < 3; ++i)
+          {
+            x[i] = GINT32_FROM_BE(x[i]);
+            controlpoints[cntr] = x[i]/16777216.0*image_width;
+            cntr++;
+            y[i] = GINT32_FROM_BE(y[i]);
+            controlpoints[cntr] = y[i]/16777216.0*image_height;
+            cntr++;
+          }
+          IFDBG(3) g_debug("Path points (%d,%d), (%d,%d), (%d,%d)",
+            x[0], y[0], x[1], y[1], x[2], y[2]);
         }
-
-      else if (type == PSD_PATH_FILL_INIT)
+        else
         {
-          if (fread (&init_fill, 2, 1, f) < 1)
-            {
-              psd_set_error (feof (f), errno, error);
-              return -1;
-            }
-          if (init_fill != 0)
-            fill = TRUE;
-
-          if (fseek (f, 22, SEEK_CUR) < 0)
-            {
-              psd_set_error (feof (f), errno, error);
-              return -1;
-            }
+          IFDBG(1) g_debug("Unexpected path type record %d", type);
+          if(fseek(f, 24, SEEK_CUR) < 0)
+          {
+            psd_set_error(feof(f), errno, error);
+            return -1;
+          }
         }
-
-      else if (type == PSD_PATH_CL_LEN
-               || type == PSD_PATH_OP_LEN)
-        {
-          if (fread (&num_rec, 2, 1, f) < 1)
-            {
-              psd_set_error (feof (f), errno, error);
-              return -1;
-            }
-          num_rec = GINT16_FROM_BE (num_rec);
-          if (num_rec > path_rec)
-            {
-              psd_set_error (feof (f), errno, error);
-              return - 1;
-            }
-          IFDBG(3) g_debug ("Num path records %d", num_rec);
-
-          if (type == PSD_PATH_CL_LEN)
-            closed = TRUE;
-          else
-            closed = FALSE;
-          cntr = 0;
-          controlpoints = g_malloc (sizeof (gdouble) * num_rec * 6);
-          if (fseek (f, 22, SEEK_CUR) < 0)
-            {
-              psd_set_error (feof (f), errno, error);
-              return -1;
-            }
-
-          while (num_rec > 0)
-            {
-              if (fread (&type, 2, 1, f) < 1)
-                {
-                  psd_set_error (feof (f), errno, error);
-                  return -1;
-                }
-              type = GINT16_FROM_BE (type);
-              IFDBG(3) g_debug ("Path record type %d", type);
-
-              if (type == PSD_PATH_CL_LNK
-                  || type == PSD_PATH_CL_UNLNK
-                  || type == PSD_PATH_OP_LNK
-                  || type == PSD_PATH_OP_UNLNK)
-                {
-                  if (fread (&y[0], 4, 1, f) < 1
-                    || fread (&x[0], 4, 1, f) < 1
-                    || fread (&y[1], 4, 1, f) < 1
-                    || fread (&x[1], 4, 1, f) < 1
-                    || fread (&y[2], 4, 1, f) < 1
-                    || fread (&x[2], 4, 1, f) < 1)
-                    {
-                      psd_set_error (feof (f), errno, error);
-                      return -1;
-                    }
-                  for (i = 0; i < 3; ++i)
-                    {
-                      x[i] = GINT32_FROM_BE (x[i]);
-                      controlpoints[cntr] = x[i] / 16777216.0 * image_width;
-                      cntr++;
-                      y[i] = GINT32_FROM_BE (y[i]);
-                      controlpoints[cntr] = y[i] / 16777216.0 * image_height;
-                      cntr++;
-                    }
-                  IFDBG(3) g_debug ("Path points (%d,%d), (%d,%d), (%d,%d)",
-                                    x[0], y[0], x[1], y[1], x[2], y[2]);
-                }
-              else
-                {
-                  IFDBG(1) g_debug ("Unexpected path type record %d", type);
-                  if (fseek (f, 24, SEEK_CUR) < 0)
-                    {
-                      psd_set_error (feof (f), errno, error);
-                      return -1;
-                    }
-                }
-              path_rec--;
-              num_rec--;
-            }
-          /* Add sub-path */
-          gimp_vectors_stroke_new_from_points (vector_id,
-                                               GIMP_VECTORS_STROKE_TYPE_BEZIER,
-                                               cntr, controlpoints, closed);
-          g_free (controlpoints);
-        }
-
-      else
-        {
-          if (fseek (f, 24, SEEK_CUR) < 0)
-            {
-              psd_set_error (feof (f), errno, error);
-              return -1;
-            }
-        }
-
-      path_rec--;
+        path_rec--;
+        num_rec--;
+      }
+      // Add sub-path
+      gimp_vectors_stroke_new_from_points(vector_id, GIMP_VECTORS_STROKE_TYPE_BEZIER,
+        cntr, controlpoints, closed);
+      g_free(controlpoints);
+    }
+    else
+    {
+      if(fseek(f, 24, SEEK_CUR) < 0)
+      {
+        psd_set_error(feof(f), errno, error);
+        return -1;
+      }
     }
 
- return 0;
+    path_rec--;
+  }
+
+  return 0;
 }
+

@@ -21,7 +21,7 @@ file_xjt_SOURCES = \
 	xjpeg.c		\
 	xjpeg.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

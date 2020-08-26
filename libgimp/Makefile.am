@@ -58,9 +58,7 @@ endif
 gimpincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimp
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"LibGimp\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"LibGimp\" \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

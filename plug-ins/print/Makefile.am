@@ -14,7 +14,7 @@ endif
 
 AM_LDFLAGS = $(mwindows)
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)		\
 	$(GTK_CFLAGS)		\
 	-I$(includedir)

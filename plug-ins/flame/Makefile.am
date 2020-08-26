@@ -30,7 +30,7 @@ flame_SOURCES = \
 	rect.c		\
 	rect.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

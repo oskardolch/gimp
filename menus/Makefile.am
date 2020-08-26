@@ -51,13 +51,14 @@ if GIMP_UNSTABLE
 DEBUG_MENU_PARAMS = --stringparam debug-menu yes
 endif
 
-%.xml: %.xml.in $(top_srcdir)/configure.in $(srcdir)/menus.xsl dialogs-menuitems.xml
+SUFFIXES = .xml.in .xml
+
+.xml.in.xml:
 if HAVE_XSLTPROC
 	$(XSLTPROC) --xinclude $(DEBUG_MENU_PARAMS) $(srcdir)/menus.xsl $< > $(@) || rm -f $(@)
 else
 	@echo "*** xsltproc is required to build the menus XML files ***"; exit 1;
 endif
-
 
 validate: $(menudata_DATA)
 if HAVE_XMLLINT

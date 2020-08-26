@@ -33,15 +33,15 @@ m4_define([gimp_sysconf_version], [2.0])
 m4_define([gimp_user_version], [2.6])
 
 m4_define([gimp_unstable],
-          m4_if(m4_eval(gimp_minor_version % 2), [1], [yes], [no]))
+      m4_if(m4_eval(gimp_minor_version % 2), [1], [yes], [no]))
 m4_define([gimp_stable],
-          m4_if(m4_eval(gimp_minor_version % 2), [0], [yes], [no]))
+      m4_if(m4_eval(gimp_minor_version % 2), [0], [yes], [no]))
 
 m4_define([gimp_full_name], [GNU Image Manipulation Program])
 
 # required versions of other packages
 m4_define([babl_required_version], [0.0.22])
-m4_define([gegl_required_version], [0.0.18])
+m4_define([gegl_required_version], [0.4.0])
 m4_define([glib_required_version], [2.16.1])
 m4_define([gtk_required_version], [2.12.5])
 m4_define([gdk_pixbuf_required_version], [gtk_required_version])
@@ -49,12 +49,12 @@ m4_define([pangoft2_required_version], [1.18.0])
 m4_define([fontconfig_required_version], [2.2.0])
 m4_define([cairo_required_version], [1.4.10])
 m4_define([gtkdoc_required_version], [1.0])
-m4_define([webkit_required_version], [1.1.0])
+m4_define([webkit_required_version], [2.26.0])
 m4_define([alsa_required_version], [1.0.0])
 m4_define([rsvg_required_version], [2.14.0])
 m4_define([wmf_required_version], [0.2.8])
 m4_define([pygtk_required_version], [2.10.4])
-m4_define([poppler_required_version], [0.4.1])
+m4_define([poppler_required_version], [0.71.0])
 m4_define([gnome_vfs_required_version], [2.10.0])
 m4_define([gnomeui_required_version], [2.10.0])
 m4_define([gnome_keyring_required_version], [0.4.5])
@@ -62,7 +62,7 @@ m4_define([libcurl_required_version], [7.15.1])
 m4_define([dbus_glib_required_version], [0.70])
 m4_define([libhal_required_version], [0.5.7])
 m4_define([exif_required_version], [0.6.15])
-m4_define([lcms_required_version], [1.16])
+m4_define([lcms_required_version], [2.0])
 
 
 AC_INIT([GIMP], [gimp_version],
@@ -123,7 +123,13 @@ if test "x$GIMP_UNSTABLE" = "xyes"; then
   AC_DEFINE(GIMP_UNSTABLE, 1,
             [Define to 1 if this is an unstable version of GIMP])
 fi
-AM_CONDITIONAL(GIMP_UNSTABLE, test "x$GIMP_UNSTABLE" = "xyes")
+AM_CONDITIONAL([GIMP_UNSTABLE], [test x$GIMP_UNSTABLE = xyes])
+AM_CONDITIONAL([HAVE_GTK_DOC], [test x$have_gtk_doc = xyes])
+AM_CONDITIONAL([ENABLE_GTK_DOC], [test x$enable_gtk_doc = xyes])
+AM_CONDITIONAL([GTK_DOC_BUILD_HTML], [test x$enable_gtk_doc_html = xyes])
+AM_CONDITIONAL([GTK_DOC_BUILD_PDF], [test x$enable_gtk_doc_pdf = xyes])
+AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL], [test -n "$LIBTOOL"])
+AM_CONDITIONAL([GTK_DOC_USE_REBASE], [test -n "$GTKDOC_REBASE"])
 
 
 # libtool versioning
@@ -384,16 +390,40 @@ AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
 AC_CHECK_HEADERS(sys/param.h sys/time.h sys/times.h sys/wait.h unistd.h)
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h langinfo.h libintl.h limits.h malloc.h netdb.h netinet/in.h stddef.h sys/socket.h])
+AC_HEADER_STDBOOL
+
+AC_FUNC_VPRINTF
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+AC_FUNC_ALLOCA
+AC_FUNC_FORK
+AC_FUNC_MMAP
+AC_FUNC_STRTOD
+AC_PROG_CXX
+AC_PROG_LEX
+AC_PROG_RANLIB
+AC_PROG_YACC
 
 AC_TYPE_PID_T
 AC_TYPE_SIGNAL
-AC_FUNC_VPRINTF
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT8_T
+AC_TYPE_OFF_T
+AC_TYPE_SSIZE_T
+AC_TYPE_UID_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT8_T
 
-AC_FUNC_ALLOCA
+AC_C_INLINE
 
 # check some more funcs
 AC_CHECK_FUNCS(fsync)
 AC_CHECK_FUNCS(difftime mmap)
+AC_CHECK_FUNCS([atexit dup2 floor ftruncate gettimeofday memmove memset modf munmap])
+AC_CHECK_FUNCS([nl_langinfo pow select setlocale socket sqrt strchr strrchr strstr strtol strtoul])
 
 
 AM_BINRELOC
@@ -442,8 +472,8 @@ AC_SUBST(ISO_CODES_LOCALEDIR)
 # Checks for required libraries
 ###############################
 
-PKG_CHECK_MODULES(BABL, babl >= babl_required_version)
-PKG_CHECK_MODULES(GEGL, gegl >= gegl_required_version)
+PKG_CHECK_MODULES([BABL], [babl >= babl_required_version])
+PKG_CHECK_MODULES([GEGL], [gegl-0.4 >= gegl_required_version])
 
 AM_PATH_GLIB_2_0(glib_required_version, :,
   AC_MSG_ERROR(Test for GLIB failed. See the file 'INSTALL' for help.),
@@ -642,7 +672,7 @@ if test "x$enable_mmx" = xyes; then
   mmx_save_CFLAGS="$CFLAGS"
   CFLAGS="$mmx_save_CFLAGS $MMX_EXTRA_CFLAGS"
 
-  AC_COMPILE_IFELSE([asm ("movq 0, %mm0");],
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([asm ("movq 0, %mm0");])],
 
     AC_DEFINE(USE_MMX, 1, [Define to 1 if MMX assembly is available.])
     AC_MSG_RESULT(yes)
@@ -655,7 +685,7 @@ if test "x$enable_mmx" = xyes; then
 
       CFLAGS="$CFLAGS $sse_flag"
 
-      AC_COMPILE_IFELSE([asm ("movntps %xmm0, 0");],
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([asm ("movntps %xmm0, 0");])],
         AC_DEFINE(USE_SSE, 1, [Define to 1 if SSE assembly is available.])
         AC_MSG_RESULT(yes)
       ,
@@ -718,7 +748,7 @@ if test "x$enable_altivec" = xyes; then
          [Define to 1 if the altivec runtime test should use a sysctl.])
         ;;
       *)
-        AC_COMPILE_IFELSE([asm ("vand %v0, %v0, %v0");],
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([asm ("vand %v0, %v0, %v0");])],
           can_use_altivec=yes, can_use_altivec=no)
         ;;
     esac
@@ -935,12 +965,12 @@ if test "$gdk_target" = x11; then
    # Test for Xmu
    if test -z "$XMU_LIBS"; then
       AC_CHECK_LIB(Xmu, XmuClientWindow,
-        [AC_CHECK_HEADERS(X11/Xmu/WinUtil.h,
-	  have_libxmu=yes
-          XMU_LIBS="$X_LIBS $X_PRE_LIBS -lX11 -lXmu -lXt",
-	  [have_libxmu="no (XMU header file not found)"],[#include <gdk/gdkx.h>])],
-	[have_libxmu="no (XMU library not found)"], -lXt -lX11)
-      SCREENSHOT_LIBS="$XMU_LIBS"
+          [AC_CHECK_HEADERS(X11/Xmu/WinUtil.h,
+              have_libxmu=yes
+              XMU_LIBS="$X_LIBS $X_PRE_LIBS -lX11 -lXmu -lXt"
+              SCREENSHOT_LIBS="$XMU_LIBS",
+              [have_libxmu="no (XMU header file not found)"],[#include <gdk/gdkx.h>])],
+          [have_libxmu="no (XMU library not found)"], -lXt -lX11)
    fi
 
    # Check for shaped window extension
@@ -1240,7 +1270,7 @@ AC_ARG_WITH(webkit, [  --without-webkit        don't build the help-browser plug
 
 have_webkit=no
 if test "x$with_webkit" != xno; then
-  PKG_CHECK_MODULES(WEBKIT, webkit-1.0 >= webkit_required_version,
+  PKG_CHECK_MODULES(WEBKIT, webkit2gtk-4.0 >= webkit_required_version,
     have_webkit=yes,
     have_webkit="no (WebKit not found)")
 else
@@ -1428,20 +1458,51 @@ AC_SUBST(WMF_CFLAGS)
 # Check for lcms
 ################
 
-AC_ARG_WITH(lcms, [  --without-lcms          build without lcms support])
+AC_ARG_WITH(lcms, [  --with-lcms             build with lcms support (check, lcms1, lcms2)],
+  [],
+  [with_lcms=check])
 
 have_lcms="no (lcms support disabled)"
 if test "x$with_lcms" != xno; then
-  have_lcms=yes
-  PKG_CHECK_MODULES(LCMS, lcms >= lcms_required_version,
-    AC_DEFINE(HAVE_LCMS, 1, [Define to 1 if lcms is available])
-    LCMS='lcms$(EXEEXT)',
-    have_lcms="no (lcms not found or unusable)")
+  if test "x$with_lcms" == x1 || \
+      test "x$with_lcms" == xlcms1 || \
+      test "x$with_lcms" == xcheck; then
+    PKG_CHECK_MODULES(LCMS1, lcms >= lcms1_required_version,
+      [have_lcms="yes (lcms1)"
+       AC_DEFINE(HAVE_LCMS, 1, [Define to 1 if lcms is available])
+       AC_DEFINE(HAVE_LCMS1, 1, [Define to 1 if lcms1 is available])
+       LCMS_CFLAGS="$LCMS1_CFLAGS"
+       LCMS_LIBS="$LCMS1_LIBS"
+       LCMS='lcms$(EXEEXT)'],
+      [have_lcms="no (lcms1 not found)"])
+  fi
+
+  if test "x$have_lcms" != "xyes (lcms1)"; then
+    if test "x$with_lcms" == x2 || \
+        test "x$with_lcms" == xlcms2 || \
+        test "x$with_lcms" == xcheck; then
+      PKG_CHECK_MODULES(LCMS2, lcms2 >= lcms2_required_version,
+        [have_lcms="yes (lcms2)"
+         AC_DEFINE(HAVE_LCMS, 1, [Define to 1 if lcms is available])
+         AC_DEFINE(HAVE_LCMS2, 1, [Define to 1 if lcms2 is available])
+         LCMS_CFLAGS="$LCMS2_CFLAGS"
+         LCMS_LIBS="$LCMS2_LIBS"
+         LCMS='lcms$(EXEEXT)'],
+        [if test "x$with_lcms" == xcheck; then
+           have_lcms="no (lcms not found)"
+         else
+           have_lcms="no (lcms2 not found)"
+         fi])
+    fi
+  fi
 fi
 
+AC_SUBST(LCMS_CFLAGS)
+AC_SUBST(LCMS_LIBS)
 AC_SUBST(LCMS)
-AM_CONDITIONAL(HAVE_LCMS, test "x$have_lcms" = xyes)
-
+AM_CONDITIONAL(HAVE_LCMS,
+               [test "x$have_lcms" = "xyes (lcms1)" || \
+                test "x$have_lcms" == "xyes (lcms2)"])
 
 ################
 # Check for alsa

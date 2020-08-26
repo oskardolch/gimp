@@ -28,7 +28,7 @@ fractal_explorer_SOURCES = \
 	fractal-explorer.c		\
 	fractal-explorer.h
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

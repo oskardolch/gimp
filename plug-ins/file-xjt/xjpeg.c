@@ -267,14 +267,11 @@ xjpg_load_layer (const char    *filename,
  * ============================================================================
  */
 
-gint
-xjpg_load_layer_alpha (const char *filename,
-                       gint32      image_id,
-                       gint32      layer_id)
+gint xjpg_load_layer_alpha(const char *filename, gint32 image_id, gint32 layer_id)
 {
   GimpPixelRgn l_pixel_rgn;
   GimpDrawable *l_drawable;
-  GimpImageType  l_layer_type;
+  //GimpImageType  l_layer_type;
   struct jpeg_decompress_struct cinfo;
   struct my_error_mgr jerr;
   FILE *infile;
@@ -288,173 +285,154 @@ xjpg_load_layer_alpha (const char *filename,
   guchar *l_buf_ptr;
   guchar *l_dstbuf_ptr;
 
-  /* We set up the normal JPEG error routines. */
-  cinfo.err = jpeg_std_error (&jerr.pub);
+  // We set up the normal JPEG error routines.
+  cinfo.err = jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = my_error_exit;
 
-  l_layer_type = GIMP_GRAY_IMAGE;
+  //l_layer_type = GIMP_GRAY_IMAGE;
 
-  /* add alpha channel */
-  gimp_layer_add_alpha (layer_id);
+  // add alpha channel
+  gimp_layer_add_alpha(layer_id);
 
-  if ((infile = g_fopen (filename, "rb")) == NULL)
+  if((infile = g_fopen(filename, "rb")) == NULL)
   {
-      /* No alpha found, thats OK, use full opaque alpha channel
-       * (there is no need not store alpha channels on full opaque channels)
-       * (fixme: if filename exists but is not readable
-       *         we should return -1 to indicate an error
-       */
-      return 0;  /* OK */
+    // No alpha found, thats OK, use full opaque alpha channel
+    // (there is no need not store alpha channels on full opaque channels)
+    // (fixme: if filename exists but is not readable
+    //         we should return -1 to indicate an error
+    return 0; // OK
   }
 
-  /* Establish the setjmp return context for my_error_exit to use. */
-  if (setjmp (jerr.setjmp_buffer))
+  // Establish the setjmp return context for my_error_exit to use.
+  if(setjmp(jerr.setjmp_buffer))
   {
-      /* If we get here, the JPEG code has signaled an error.
-       * We need to clean up the JPEG object, close the input file, and return.
-       */
-      jpeg_destroy_decompress (&cinfo);
-      if (infile)
-	fclose (infile);
+    // If we get here, the JPEG code has signaled an error.
+    // We need to clean up the JPEG object, close the input file, and return.
+    jpeg_destroy_decompress(&cinfo);
+    if(infile) fclose(infile);
 
-      g_printerr ("XJT: JPEG alpha load error\n");
-      return -1;
+    g_printerr("XJT: JPEG alpha load error\n");
+    return -1;
   }
 
-  /* Now we can initialize the JPEG decompression object. */
-  jpeg_create_decompress (&cinfo);
+  // Now we can initialize the JPEG decompression object.
+  jpeg_create_decompress(&cinfo);
 
-  /* Step 2: specify data source (eg, a file) */
+  // Step 2: specify data source (eg, a file)
+  jpeg_stdio_src(&cinfo, infile);
 
-  jpeg_stdio_src (&cinfo, infile);
+  // Step 3: read file parameters with jpeg_read_header()
+  (void)jpeg_read_header(&cinfo, TRUE);
+  // We can ignore the return value from jpeg_read_header since
+  //   (a) suspension is not possible with the stdio data source, and
+  //   (b) we passed TRUE to reject a tables-only JPEG file as an error.
+  // See libjpeg.doc for more info.
 
-  /* Step 3: read file parameters with jpeg_read_header() */
+  // Step 4: set parameters for decompression
 
-  (void) jpeg_read_header (&cinfo, TRUE);
-  /* We can ignore the return value from jpeg_read_header since
-   *   (a) suspension is not possible with the stdio data source, and
-   *   (b) we passed TRUE to reject a tables-only JPEG file as an error.
-   * See libjpeg.doc for more info.
-   */
+  // In this example, we don't need to change any of the defaults set by
+  // jpeg_read_header(), so we do nothing here.
 
-  /* Step 4: set parameters for decompression */
+  // Step 5: Start decompressor
+  jpeg_start_decompress(&cinfo);
 
-  /* In this example, we don't need to change any of the defaults set by
-   * jpeg_read_header(), so we do nothing here.
-   */
+  // We may need to do some setup of our own at this point before reading
+  // the data.  After jpeg_start_decompress() we have the correct scaled
+  // output image dimensions available, as well as the output colormap
+  // if we asked for color quantization.
+  // In this example, we need to make an output work buffer of the right size.
 
-  /* Step 5: Start decompressor */
+  //temporary buffer(for read in jpeg lines)
+  l_tile_height = gimp_tile_height();
+  l_buf = g_new(guchar, l_tile_height*cinfo.output_width*cinfo.output_components);
+  l_rowbuf = g_new(guchar*, l_tile_height);
 
-  jpeg_start_decompress (&cinfo);
-
-  /* We may need to do some setup of our own at this point before reading
-   * the data.  After jpeg_start_decompress() we have the correct scaled
-   * output image dimensions available, as well as the output colormap
-   * if we asked for color quantization.
-   * In this example, we need to make an output work buffer of the right size.
-   */
-  /* temporary buffer (for read in jpeg lines) */
-  l_tile_height = gimp_tile_height ();
-  l_buf = g_new (guchar, l_tile_height * cinfo.output_width * cinfo.output_components);
-  l_rowbuf = g_new (guchar*, l_tile_height);
-
-  for (l_idx = 0; l_idx < l_tile_height; l_idx++)
+  for(l_idx = 0; l_idx < l_tile_height; l_idx++)
   {
-    l_rowbuf[l_idx] = l_buf + cinfo.output_width * cinfo.output_components * l_idx;
+    l_rowbuf[l_idx] = l_buf + cinfo.output_width*cinfo.output_components*l_idx;
   }
 
-  l_drawable = gimp_drawable_get (layer_id);
+  l_drawable = gimp_drawable_get(layer_id);
   if(l_drawable == NULL)
   {
-    g_printerr ("XJT: gimp_drawable_get failed on layer id %d\n", (int)layer_id);
+    g_printerr("XJT: gimp_drawable_get failed on layer id %d\n", (int)layer_id);
     fclose(infile);
     return -1;
   }
 
-  /* Check if jpeg file can be used as alpha channel
-   */
+  // Check if jpeg file can be used as alpha channel
   if((cinfo.output_components != 1) ||
-     (cinfo.output_width  != l_drawable->width) ||
-     (cinfo.output_height != l_drawable->height))
+    (cinfo.output_width  != l_drawable->width) ||
+    (cinfo.output_height != l_drawable->height))
   {
-     g_printerr ("XJT: cant load %s as alpha channel\n", filename);
-     fclose (infile);
-     return -1;
+    g_printerr("XJT: cant load %s as alpha channel\n", filename);
+    fclose(infile);
+    return -1;
   }
 
-  /* buffer to read in the layer and merge with the alpha from jpeg file */
-  l_dstbuf = g_new (guchar, l_tile_height * l_drawable->width * l_drawable->bpp);
+  // buffer to read in the layer and merge with the alpha from jpeg file
+  l_dstbuf = g_new(guchar, l_tile_height*l_drawable->width*l_drawable->bpp);
 
-  gimp_pixel_rgn_init (&l_pixel_rgn, l_drawable, 0, 0, l_drawable->width, l_drawable->height, TRUE, FALSE);
+  gimp_pixel_rgn_init(&l_pixel_rgn, l_drawable, 0, 0, l_drawable->width, l_drawable->height, TRUE, FALSE);
   l_alpha_offset = l_drawable->bpp -1;
 
-  /* Step 6: while (scan lines remain to be read) */
-  /*           jpeg_read_scanlines(...); */
+  // Step 6: while (scan lines remain to be read)
+  //           jpeg_read_scanlines(...);
 
-  /* Here we use the library's state variable cinfo.output_scanline as the
-   * loop counter, so that we don't have to keep track ourselves.
-   */
-  while (cinfo.output_scanline < cinfo.output_height)
+  // Here we use the library's state variable cinfo.output_scanline as the
+  // loop counter, so that we don't have to keep track ourselves.
+  while(cinfo.output_scanline < cinfo.output_height)
   {
-      l_start = cinfo.output_scanline;
-      l_end = cinfo.output_scanline + l_tile_height;
-      l_end = MIN (l_end, cinfo.output_height);
-      l_scanlines = l_end - l_start;
+    l_start = cinfo.output_scanline;
+    l_end = cinfo.output_scanline + l_tile_height;
+    l_end = MIN(l_end, cinfo.output_height);
+    l_scanlines = l_end - l_start;
 
-      for (l_idx = 0; l_idx < l_scanlines; l_idx++)
-      {
-	jpeg_read_scanlines (&cinfo, (JSAMPARRAY) &l_rowbuf[l_idx], 1);
-      }
+    for(l_idx = 0; l_idx < l_scanlines; l_idx++)
+    {
+      jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&l_rowbuf[l_idx], 1);
+    }
 
-      gimp_pixel_rgn_get_rect (&l_pixel_rgn, l_dstbuf, 0, l_start, l_drawable->width, l_scanlines);
+    gimp_pixel_rgn_get_rect(&l_pixel_rgn, l_dstbuf, 0, l_start, l_drawable->width, l_scanlines);
 
-      /* copy the loaded jpeg data (from buf) to the layers alpha channel data */
-      l_idx = l_tile_height * l_drawable->width;
-      l_buf_ptr = l_buf;
-      l_dstbuf_ptr = l_dstbuf;
-      while(l_idx--)
-      {
-         l_dstbuf_ptr  += l_alpha_offset;
-         *l_dstbuf_ptr++ = *l_buf_ptr++;
-      }
+    // copy the loaded jpeg data (from buf) to the layers alpha channel data
+    l_idx = l_tile_height*l_drawable->width;
+    l_buf_ptr = l_buf;
+    l_dstbuf_ptr = l_dstbuf;
+    while(l_idx--)
+    {
+      l_dstbuf_ptr  += l_alpha_offset;
+      *l_dstbuf_ptr++ = *l_buf_ptr++;
+    }
 
-      gimp_pixel_rgn_set_rect (&l_pixel_rgn, l_dstbuf, 0, l_start, l_drawable->width, l_scanlines);
-
-      gimp_progress_update ((double) cinfo.output_scanline / (double) cinfo.output_height);
+    gimp_pixel_rgn_set_rect(&l_pixel_rgn, l_dstbuf, 0, l_start, l_drawable->width, l_scanlines);
+    gimp_progress_update((double)cinfo.output_scanline/(double)cinfo.output_height);
   }
 
-  /* Step 7: Finish decompression */
+  // Step 7: Finish decompression
+  jpeg_finish_decompress(&cinfo);
+  // We can ignore the return value since suspension is not possible
+  // with the stdio data source.
 
-  jpeg_finish_decompress (&cinfo);
-  /* We can ignore the return value since suspension is not possible
-   * with the stdio data source.
-   */
+  // Step 8: Release JPEG decompression object
+  // This is an important step since it will release a good deal of memory.
+  jpeg_destroy_decompress(&cinfo);
 
-  /* Step 8: Release JPEG decompression object */
+  // free up the temporary buffers
+  g_free(l_rowbuf);
+  g_free(l_buf);
+  g_free(l_dstbuf);
 
-  /* This is an important step since it will release a good deal of memory. */
-  jpeg_destroy_decompress (&cinfo);
+  // After finish_decompress, we can close the input file.
+  // Here we postpone it until after no more JPEG errors are possible,
+  // so as to simplify the setjmp error logic above.  (Actually, I don't
+  // think that jpeg_destroy can do an error exit, but why assume anything...)
+  fclose(infile);
 
-  /* free up the temporary buffers */
-  g_free (l_rowbuf);
-  g_free (l_buf);
-  g_free (l_dstbuf);
-
-  /* After finish_decompress, we can close the input file.
-   * Here we postpone it until after no more JPEG errors are possible,
-   * so as to simplify the setjmp error logic above.  (Actually, I don't
-   * think that jpeg_destroy can do an error exit, but why assume anything...)
-   */
-  fclose (infile);
-
-  /* At this point you may want to check to see whether any corrupt-data
-   * warnings occurred (test whether jerr.num_warnings is nonzero).
-   */
-
-
-  return (0);  /* OK */
-
-}	/* xjpg_load_layer_alpha */
+  // At this point you may want to check to see whether any corrupt-data
+  // warnings occurred (test whether jerr.num_warnings is nonzero).
+  return(0); // OK
+}	// xjpg_load_layer_alpha
 
 
 /* ============================================================================

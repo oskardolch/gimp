@@ -1,9 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"Gimp-Plug-In\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"Gimp-Plug-In\" \
 	-I$(top_builddir)	\
 	-I$(top_srcdir)		\
 	-I$(top_builddir)/app	\

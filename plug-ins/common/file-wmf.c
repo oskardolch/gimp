@@ -340,7 +340,7 @@ load_wmf_size (const gchar *filename,
     success = FALSE;
 
   wmf_mem_close (API);
-  g_mapped_file_free (file);
+  g_mapped_file_unref (file);
 
   if (width < 1 || height < 1)
     {
@@ -871,7 +871,7 @@ wmf_get_pixbuf (const gchar *filename,
       wmf_api_destroy (API);
     }
 
-  g_mapped_file_free (file);
+  g_mapped_file_unref (file);
 
   return pixels;
 }
@@ -956,7 +956,7 @@ wmf_load_file (const gchar  *filename,
       wmf_api_destroy (API);
     }
 
-  g_mapped_file_free (file);
+  g_mapped_file_unref (file);
 
   /* FIXME: improve error message */
   g_set_error (error, G_FILE_ERROR, G_FILE_ERROR_FAILED,

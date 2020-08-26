@@ -1570,27 +1570,24 @@ options_update (GFigObj *old_obj)
     }
 }
 
-static void
-save_file_chooser_response (GtkFileChooser *chooser,
-                            gint            response_id,
-                            GFigObj        *obj)
+static void save_file_chooser_response(GtkFileChooser *chooser, gint response_id, GFigObj *obj)
 {
-  if (response_id == GTK_RESPONSE_OK)
-    {
-      gchar   *filename;
-      GFigObj *real_current;
+  if(response_id == GTK_RESPONSE_OK)
+  {
+    gchar *filename;
+    //GFigObj *real_current;
 
-      filename = gtk_file_chooser_get_filename (chooser);
+    filename = gtk_file_chooser_get_filename(chooser);
 
-      obj->filename = filename;
+    obj->filename = filename;
 
-      real_current = gfig_context->current_obj;
-      gfig_context->current_obj = obj;
-      gfig_save_callbk ();
-      gfig_context->current_obj = gfig_context->current_obj;
-    }
+    //real_current = gfig_context->current_obj;
+    gfig_context->current_obj = obj;
+    gfig_save_callbk();
+    gfig_context->current_obj = gfig_context->current_obj;
+  }
 
-  gtk_widget_destroy (GTK_WIDGET (chooser));
+  gtk_widget_destroy(GTK_WIDGET(chooser));
 }
 
 static GfigObject *

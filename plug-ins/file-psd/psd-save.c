@@ -984,37 +984,28 @@ save_resources (FILE   *fd,
   fseek (fd, eof_pos, SEEK_SET);
 }
 
-
-
-static int
-get_compress_channel_data (guchar  *channel_data,
-                           gint32   channel_cols,
-                           gint32   channel_rows,
-                           gint32   stride,
-                           gint16  *LengthsTable,
-                           guchar  *remdata)
+static int get_compress_channel_data(guchar *channel_data, gint32 channel_cols, gint32 channel_rows,
+  gint32 stride, gint16 *LengthsTable, guchar *remdata)
 {
   gint    i;
-  gint32  len;                 /* Length of compressed data */
-  guchar *start;               /* Starting position of a row in channel_data */
-  gint32  channel_length;      /* Total channel's length */
+  gint32  len; // Length of compressed data
+  guchar *start; // Starting position of a row in channel_data
+  //gint32  channel_length; // Total channel's length
 
-  channel_length = channel_cols * channel_rows;
+  //channel_length = channel_cols*channel_rows;
 
-  /* For every row in the channel */
-
+  // For every row in the channel
   len = 0;
-  for (i = 0; i < channel_rows; i++)
-    {
-      start = channel_data + (i * channel_cols * stride);
+  for(i = 0; i < channel_rows; i++)
+  {
+    start = channel_data + (i*channel_cols*stride);
 
-      /* Create packed data for this row */
-      LengthsTable[i] = pack_pb_line (start, channel_cols, stride,
-                                       &remdata[len]);
-      len += LengthsTable[i];
-    }
+    // Create packed data for this row
+    LengthsTable[i] = pack_pb_line(start, channel_cols, stride, &remdata[len]);
+    len += LengthsTable[i];
+  }
 
-  /*  return((len + channel_rows * sizeof (gint16)) + sizeof (gint16));*/
+  //return((len + channel_rows*sizeof(gint16)) + sizeof(gint16));
   return len;
 }
 

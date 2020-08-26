@@ -825,9 +825,9 @@ mng_save_image (const gchar  *filename,
       volatile gint   layer_bpp;
       GimpPixelRgn    layer_pixel_rgn;
 
-      guint8          layer_mng_colortype;
-      guint8          layer_mng_compression_type;
-      guint8          layer_mng_interlace_type;
+      //guint8          layer_mng_colortype;
+      //guint8          layer_mng_compression_type;
+      //guint8          layer_mng_interlace_type;
       gboolean        layer_has_unique_palette;
 
       gchar           frame_mode;
@@ -863,27 +863,27 @@ mng_save_image (const gchar  *filename,
         {
         case GIMP_RGB_IMAGE:
           layer_bpp = 3;
-          layer_mng_colortype = MNG_COLORTYPE_RGB;
+          //layer_mng_colortype = MNG_COLORTYPE_RGB;
           break;
         case GIMP_RGBA_IMAGE:
           layer_bpp = 4;
-          layer_mng_colortype = MNG_COLORTYPE_RGBA;
+          //layer_mng_colortype = MNG_COLORTYPE_RGBA;
           break;
         case GIMP_GRAY_IMAGE:
           layer_bpp = 1;
-          layer_mng_colortype = MNG_COLORTYPE_GRAY;
+          //layer_mng_colortype = MNG_COLORTYPE_GRAY;
           break;
         case GIMP_GRAYA_IMAGE:
           layer_bpp = 2;
-          layer_mng_colortype = MNG_COLORTYPE_GRAYA;
+          //layer_mng_colortype = MNG_COLORTYPE_GRAYA;
           break;
         case GIMP_INDEXED_IMAGE:
           layer_bpp = 1;
-          layer_mng_colortype = MNG_COLORTYPE_INDEXED;
+          //layer_mng_colortype = MNG_COLORTYPE_INDEXED;
           break;
         case GIMP_INDEXEDA_IMAGE:
           layer_bpp = 2;
-          layer_mng_colortype = MNG_COLORTYPE_INDEXED | MNG_COLORTYPE_GRAYA;
+          //layer_mng_colortype = MNG_COLORTYPE_INDEXED | MNG_COLORTYPE_GRAYA;
           break;
         default:
           g_warning ("Unsupported GimpImageType in mng_save_image()");
@@ -903,32 +903,32 @@ mng_save_image (const gchar  *filename,
       switch (layer_chunks_type)
         {
         case CHUNKS_PNG_D:
-          layer_mng_compression_type = MNG_COMPRESSION_DEFLATE;
-          if (mng_data.interlaced != 0)
-            layer_mng_interlace_type = MNG_INTERLACE_ADAM7;
-          else
-            layer_mng_interlace_type = MNG_INTERLACE_NONE;
-          break;
+          //layer_mng_compression_type = MNG_COMPRESSION_DEFLATE;
+          //if (mng_data.interlaced != 0)
+          //  layer_mng_interlace_type = MNG_INTERLACE_ADAM7;
+          //else
+          //  layer_mng_interlace_type = MNG_INTERLACE_NONE;
+          //break;
         case CHUNKS_JNG_D:
-          layer_mng_compression_type = MNG_COMPRESSION_DEFLATE;
-          if (mng_data.interlaced != 0)
-            layer_mng_interlace_type = MNG_INTERLACE_ADAM7;
-          else
-            layer_mng_interlace_type = MNG_INTERLACE_NONE;
-          break;
+          //layer_mng_compression_type = MNG_COMPRESSION_DEFLATE;
+          //if (mng_data.interlaced != 0)
+          //  layer_mng_interlace_type = MNG_INTERLACE_ADAM7;
+          //else
+          //  layer_mng_interlace_type = MNG_INTERLACE_NONE;
+          //break;
         case CHUNKS_PNG:
-          layer_mng_compression_type = MNG_COMPRESSION_DEFLATE;
-          if (mng_data.interlaced != 0)
-            layer_mng_interlace_type = MNG_INTERLACE_ADAM7;
-          else
-            layer_mng_interlace_type = MNG_INTERLACE_NONE;
-          break;
+          //layer_mng_compression_type = MNG_COMPRESSION_DEFLATE;
+          //if (mng_data.interlaced != 0)
+          //  layer_mng_interlace_type = MNG_INTERLACE_ADAM7;
+          //else
+          //  layer_mng_interlace_type = MNG_INTERLACE_NONE;
+          //break;
         case CHUNKS_JNG:
-          layer_mng_compression_type = MNG_COMPRESSION_BASELINEJPEG;
-          if (mng_data.interlaced != 0)
-            layer_mng_interlace_type = MNG_INTERLACE_PROGRESSIVE;
-          else
-            layer_mng_interlace_type = MNG_INTERLACE_SEQUENTIAL;
+          //layer_mng_compression_type = MNG_COMPRESSION_BASELINEJPEG;
+          //if (mng_data.interlaced != 0)
+          //  layer_mng_interlace_type = MNG_INTERLACE_PROGRESSIVE;
+          //else
+          //  layer_mng_interlace_type = MNG_INTERLACE_SEQUENTIAL;
           break;
         default:
           g_warning ("Huh? Programmer stupidity error "

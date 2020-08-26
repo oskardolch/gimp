@@ -862,12 +862,12 @@ write_sun_header (FILE            *ofp,
   int j, hdr_entries;
   L_CARD32 *cp;
 
-  hdr_entries = sizeof (L_SUNFILEHEADER)/sizeof(sunhdr->l_ras_magic);
+  hdr_entries = sizeof(L_SUNFILEHEADER)/sizeof(sunhdr->l_ras_magic);
 
   cp = (L_CARD32 *)sunhdr;
 
   /* Write out all 32-bit values of the header and check for byte order */
-  for (j = 0; j < sizeof (L_SUNFILEHEADER)/sizeof(sunhdr->l_ras_magic); j++)
+  for (j = 0; j < hdr_entries; j++)
     {
       write_card32 (ofp, *(cp++));
     }
@@ -1374,11 +1374,11 @@ save_index (FILE    *ofp,
   unsigned char *suncolmap = sun_colormap;
   GimpPixelRgn pixel_rgn;
   GimpDrawable *drawable;
-  GimpImageType drawable_type;
+  //GimpImageType drawable_type;
   WRITE_FUN *write_fun;
 
   drawable = gimp_drawable_get (drawable_ID);
-  drawable_type = gimp_drawable_type (drawable_ID);
+  //drawable_type = gimp_drawable_type (drawable_ID);
   width = drawable->width;
   height = drawable->height;
   tile_height = gimp_tile_height ();
@@ -1521,10 +1521,10 @@ save_rgb (FILE   *ofp,
   L_SUNFILEHEADER sunhdr;
   GimpPixelRgn pixel_rgn;
   GimpDrawable *drawable;
-  GimpImageType drawable_type;
+  //GimpImageType drawable_type;
 
   drawable = gimp_drawable_get (drawable_ID);
-  drawable_type = gimp_drawable_type (drawable_ID);
+  //drawable_type = gimp_drawable_type (drawable_ID);
   width = drawable->width;
   height = drawable->height;
   tile_height = gimp_tile_height ();

@@ -160,9 +160,9 @@ run (const gchar      *name,
      GimpParam       **return_vals)
 {
   static GimpParam  values[2];
-  GimpRunMode       run_mode;
+  //GimpRunMode       run_mode;
 
-  run_mode = param[0].data.d_int32;
+  //run_mode = param[0].data.d_int32;
 
   *nreturn_vals = 1;
   *return_vals  = values;
@@ -312,10 +312,10 @@ insert_into_tree_view (PluginBrowser *browser,
                        const gchar   *types_str,
                        PInfo         *pinfo)
 {
-  gchar        *labels[3];
+  //gchar        *labels[3];
   gchar        *str_ptr;
   gchar        *tmp_ptr;
-  gchar        *leaf_ptr;
+  //gchar        *leaf_ptr;
   GtkTreeIter   parent, iter;
   GtkTreeStore *tree_store;
 
@@ -329,7 +329,7 @@ insert_into_tree_view (PluginBrowser *browser,
   if (str_ptr == NULL)
     return; /* No node */
 
-  leaf_ptr = g_strdup (str_ptr + 1);
+  //leaf_ptr = g_strdup (str_ptr + 1);
 
   *str_ptr = '\0';
 
@@ -339,9 +339,9 @@ insert_into_tree_view (PluginBrowser *browser,
 
   /* Last was a leaf */
   /*   printf("found leaf %s parent = %p\n",leaf_ptr,parent); */
-  labels[0] = g_strdup (name);
-  labels[1] = g_strdup (xtimestr);
-  labels[2] = g_strdup (types_str);
+  //labels[0] = g_strdup (name);
+  //labels[1] = g_strdup (xtimestr);
+  //labels[2] = g_strdup (types_str);
 
   tree_store = GTK_TREE_STORE (gtk_tree_view_get_model (browser->tree_view));
   gtk_tree_store_append (tree_store, &iter, &parent);

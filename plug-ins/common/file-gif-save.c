@@ -1353,321 +1353,233 @@ bump_pixel (void)
     }
 }
 
-/*
- * Return the next pixel from the image
- */
-static int
-gif_next_pixel (ifunptr getpixel)
+// Return the next pixel from the image
+static int gif_next_pixel(ifunptr getpixel)
 {
   int r;
 
-  if (CountDown == 0)
-    return EOF;
+  if(CountDown == 0) return EOF;
 
   --CountDown;
-
-  r = (*getpixel) (curx, cury);
-
-  bump_pixel ();
+  r = (*getpixel)(curx, cury);
+  bump_pixel();
 
   return r;
 }
 
-/* public */
-
-static void
-gif_encode_header (FILE     *fp,
-                   gboolean  gif89,
-                   int       GWidth,
-                   int       GHeight,
-                   int       Background,
-                   int       BitsPerPixel,
-                   int       Red[],
-                   int       Green[],
-                   int       Blue[],
-                   ifunptr   get_pixel)
+// public
+static void gif_encode_header(FILE *fp, gboolean gif89, int GWidth, int GHeight, int Background,
+  int BitsPerPixel, int Red[], int Green[], int Blue[], ifunptr get_pixel)
 {
   int B;
   int RWidth, RHeight;
-  int LeftOfs, TopOfs;
+  //int LeftOfs, TopOfs;
   int Resolution;
   int ColorMapSize;
-  int InitCodeSize;
+  //int InitCodeSize;
   int i;
 
   ColorMapSize = 1 << BitsPerPixel;
 
   RWidth = Width = GWidth;
   RHeight = Height = GHeight;
-  LeftOfs = TopOfs = 0;
+  //LeftOfs = TopOfs = 0;
 
   Resolution = BitsPerPixel;
 
-  /*
-   * Calculate number of bits we are expecting
-   */
-  CountDown = (long) Width *(long) Height;
+  // Calculate number of bits we are expecting
+  CountDown = (long)Width*(long)Height;
 
-  /*
-   * Indicate which pass we are on (if interlace)
-   */
+  // Indicate which pass we are on (if interlace)
   Pass = 0;
 
-  /*
-   * The initial code size
-   */
-  if (BitsPerPixel <= 1)
-    InitCodeSize = 2;
-  else
-    InitCodeSize = BitsPerPixel;
+  // The initial code size
+  //if (BitsPerPixel <= 1)
+  //  InitCodeSize = 2;
+  //else
+  //  InitCodeSize = BitsPerPixel;
 
-  /*
-   * Set up the current x and y position
-   */
+  // Set up the current x and y position
   curx = cury = 0;
 
-  /*
-   * Write the Magic header
-   */
-  fwrite (gif89 ? "GIF89a" : "GIF87a", 1, 6, fp);
+  // Write the Magic header
+  fwrite(gif89 ? "GIF89a" : "GIF87a", 1, 6, fp);
 
-  /*
-   * Write out the screen width and height
-   */
+  // Write out the screen width and height
   put_word (RWidth, fp);
   put_word (RHeight, fp);
 
-  /*
-   * Indicate that there is a global colour map
-   */
-  B = 0x80;                        /* Yes, there is a color map */
+  // Indicate that there is a global colour map
+  B = 0x80; // Yes, there is a color map
 
-  /*
-   * OR in the resolution
-   */
+  // OR in the resolution
   B |= (Resolution - 1) << 5;
 
-  /*
-   * OR in the Bits per Pixel
-   */
+  // OR in the Bits per Pixel
   B |= (BitsPerPixel - 1);
 
-  /*
-   * Write it out
-   */
-  fputc (B, fp);
+  // Write it out
+  fputc(B, fp);
 
-  /*
-   * Write out the Background colour
-   */
-  fputc (Background, fp);
+  // Write out the Background colour
+  fputc(Background, fp);
 
-  /*
-   * Byte of 0's (future expansion)
-   */
-  fputc (0, fp);
+  // Byte of 0's (future expansion)
+  fputc(0, fp);
 
-  /*
-   * Write out the Global Colour Map
-   */
-  for (i = 0; i < ColorMapSize; i++)
-    {
-      fputc (Red[i], fp);
-      fputc (Green[i], fp);
-      fputc (Blue[i], fp);
-    }
+  // Write out the Global Colour Map
+  for(i = 0; i < ColorMapSize; i++)
+  {
+    fputc(Red[i], fp);
+    fputc(Green[i], fp);
+    fputc(Blue[i], fp);
+  }
 }
 
 
-static void
-gif_encode_graphic_control_ext (FILE    *fp,
-                                int      Disposal,
-                                int      Delay89,
-                                int      NumFramesInImage,
-                                int      GWidth,
-                                int      GHeight,
-                                int      Transparent,
-                                int      BitsPerPixel,
-                                ifunptr  get_pixel)
+static void gif_encode_graphic_control_ext(FILE *fp, int Disposal, int Delay89, int NumFramesInImage,
+  int GWidth, int GHeight, int Transparent, int BitsPerPixel, ifunptr get_pixel)
 {
-  int RWidth, RHeight;
-  int LeftOfs, TopOfs;
-  int Resolution;
-  int ColorMapSize;
-  int InitCodeSize;
+  //int RWidth, RHeight;
+  //int LeftOfs, TopOfs;
+  //int Resolution;
+  //int ColorMapSize;
+  //int InitCodeSize;
 
-  ColorMapSize = 1 << BitsPerPixel;
+  //ColorMapSize = 1 << BitsPerPixel;
 
-  RWidth = Width = GWidth;
-  RHeight = Height = GHeight;
-  LeftOfs = TopOfs = 0;
+  //RWidth =
+  Width = GWidth;
+  //RHeight =
+  Height = GHeight;
+  //LeftOfs = TopOfs = 0;
 
-  Resolution = BitsPerPixel;
+  //Resolution = BitsPerPixel;
 
-  /*
-   * Calculate number of bits we are expecting
-   */
-  CountDown = (long) Width *(long) Height;
+  // Calculate number of bits we are expecting
+  CountDown = (long)Width*(long)Height;
 
-  /*
-   * Indicate which pass we are on (if interlace)
-   */
+  // Indicate which pass we are on (if interlace)
   Pass = 0;
 
-  /*
-   * The initial code size
-   */
-  if (BitsPerPixel <= 1)
-    InitCodeSize = 2;
-  else
-    InitCodeSize = BitsPerPixel;
+  // The initial code size
+  //if(BitsPerPixel <= 1)
+  //  InitCodeSize = 2;
+  //else
+  //  InitCodeSize = BitsPerPixel;
 
-  /*
-   * Set up the current x and y position
-   */
+  // Set up the current x and y position
   curx = cury = 0;
 
-  /*
-   * Write out extension for transparent colour index, if necessary.
-   */
-  if ( (Transparent >= 0) || (NumFramesInImage > 1) )
-    {
-      /* Extension Introducer - fixed. */
-      fputc ('!', fp);
-      /* Graphic Control Label - fixed. */
-      fputc (0xf9, fp);
-      /* Block Size - fixed. */
-      fputc (4, fp);
+  // Write out extension for transparent colour index, if necessary.
+  if((Transparent >= 0) || (NumFramesInImage > 1))
+  {
+    // Extension Introducer - fixed
+    fputc('!', fp);
+    // Graphic Control Label - fixed
+    fputc(0xf9, fp);
+    // Block Size - fixed
+    fputc(4, fp);
 
-      /* Packed Fields - XXXdddut (d=disposal, u=userInput, t=transFlag) */
-      /*                    s8421                                        */
-      fputc ( ((Transparent >= 0) ? 0x01 : 0x00) /* TRANSPARENCY */
+    // Packed Fields - XXXdddut (d=disposal, u=userInput, t=transFlag)
+    //                    s8421
+    fputc(((Transparent >= 0) ? 0x01 : 0x00) // TRANSPARENCY
+      // DISPOSAL
+      | ((NumFramesInImage > 1) ? (Disposal << 2) : 0x00),
+      // 0x03 or 0x01 build frames cumulatively
+      // 0x02 clears frame before drawing
+      // 0x00 'don't care'
+      fp);
 
-              /* DISPOSAL */
-              | ((NumFramesInImage > 1) ? (Disposal << 2) : 0x00 ),
-              /* 0x03 or 0x01 build frames cumulatively */
-              /* 0x02 clears frame before drawing */
-              /* 0x00 'don't care' */
+    fputc(Delay89 & 255, fp);
+    fputc((Delay89 >> 8) & 255, fp);
 
-              fp);
-
-      fputc (Delay89 & 255, fp);
-      fputc ((Delay89 >> 8) & 255, fp);
-
-      fputc (Transparent, fp);
-      fputc (0, fp);
-    }
+    fputc(Transparent, fp);
+    fputc(0, fp);
+  }
 }
 
 
-static void
-gif_encode_image_data (FILE    *fp,
-                       int      GWidth,
-                       int      GHeight,
-                       int      GInterlace,
-                       int      BitsPerPixel,
-                       ifunptr  get_pixel,
-                       gint     offset_x,
-                       gint     offset_y)
+static void gif_encode_image_data(FILE *fp, int GWidth, int GHeight, int GInterlace,
+  int BitsPerPixel, ifunptr get_pixel, gint offset_x, gint offset_y)
 {
-  int RWidth, RHeight;
+  //int RWidth, RHeight;
   int LeftOfs, TopOfs;
-  int Resolution;
-  int ColorMapSize;
+  //int Resolution;
+  //int ColorMapSize;
   int InitCodeSize;
 
   Interlace = GInterlace;
 
-  ColorMapSize = 1 << BitsPerPixel;
+  //ColorMapSize = 1 << BitsPerPixel;
 
-  RWidth = Width = GWidth;
-  RHeight = Height = GHeight;
-  LeftOfs = (int) offset_x;
-  TopOfs = (int) offset_y;
+  //RWidth =
+  Width = GWidth;
+  //RHeight =
+  Height = GHeight;
+  LeftOfs = (int)offset_x;
+  TopOfs = (int)offset_y;
 
-  Resolution = BitsPerPixel;
+  //Resolution = BitsPerPixel;
 
-  /*
-   * Calculate number of bits we are expecting
-   */
-  CountDown = (long) Width * (long) Height;
+  // Calculate number of bits we are expecting
+  CountDown = (long)Width*(long)Height;
 
-  /*
-   * Indicate which pass we are on (if interlace)
-   */
+  // Indicate which pass we are on (if interlace)
   Pass = 0;
 
-  /*
-   * The initial code size
-   */
-  if (BitsPerPixel <= 1)
+  // The initial code size
+  if(BitsPerPixel <= 1)
     InitCodeSize = 2;
   else
     InitCodeSize = BitsPerPixel;
 
-  /*
-   * Set up the current x and y position
-   */
+  // Set up the current x and y position
   curx = cury = 0;
 
-  /*
-   * Write an Image separator
-   */
-  fputc (',', fp);
+  // Write an Image separator
+  fputc(',', fp);
 
-  /*
-   * Write the Image header
-   */
+  // Write the Image header
+  put_word(LeftOfs, fp);
+  put_word(TopOfs, fp);
+  put_word(Width, fp);
+  put_word(Height, fp);
 
-  put_word (LeftOfs, fp);
-  put_word (TopOfs, fp);
-  put_word (Width, fp);
-  put_word (Height, fp);
-
-  /*
-   * Write out whether or not the image is interlaced
-   */
-  if (Interlace)
-    fputc (0x40, fp);
+  // Write out whether or not the image is interlaced
+  if(Interlace)
+    fputc(0x40, fp);
   else
-    fputc (0x00, fp);
+    fputc(0x00, fp);
 
-  /*
-   * Write out the initial code size
-   */
-  fputc (InitCodeSize, fp);
+  // Write out the initial code size
+  fputc(InitCodeSize, fp);
 
-  /*
-   * Go and actually compress the data
-   */
-  compress (InitCodeSize + 1, fp, get_pixel);
+  // Go and actually compress the data
+  compress(InitCodeSize + 1, fp, get_pixel);
 
-  /*
-   * Write out a Zero-length packet (to end the series)
-   */
+  // Write out a Zero-length packet (to end the series)
   fputc (0, fp);
 
 #if 0
   /***************************/
   Interlace = GInterlace;
-  ColorMapSize = 1 << BitsPerPixel;
-  RWidth = Width = GWidth;
-  RHeight = Height = GHeight;
+  //ColorMapSize = 1 << BitsPerPixel;
+  //RWidth =
+  Width = GWidth;
+  //RHeight =
+  Height = GHeight;
   LeftOfs = TopOfs = 0;
-  Resolution = BitsPerPixel;
+  //Resolution = BitsPerPixel;
 
-  CountDown = (long) Width *(long) Height;
+  CountDown = (long)Width*(long)Height;
   Pass = 0;
-  /*
-   * The initial code size
-   */
-  if (BitsPerPixel <= 1)
+  // The initial code size
+  if(BitsPerPixel <= 1)
     InitCodeSize = 2;
   else
     InitCodeSize = BitsPerPixel;
-  /*
-   * Set up the current x and y position
-   */
+  // Set up the current x and y position
   curx = cury = 0;
 #endif
 }

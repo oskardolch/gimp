@@ -481,7 +481,7 @@ mosaic (GimpDrawable *drawable,
 {
   gint     x1, y1, x2, y2;
   gint     width, height;
-  gint     alpha;
+  //gint     alpha;
   GimpRGB  color;
 
   /*  Find the mask bounds  */
@@ -543,7 +543,7 @@ mosaic (GimpDrawable *drawable,
       break;
     }
 
-  alpha = drawable->bpp - 1;
+  //alpha = drawable->bpp - 1;
 
   light_x = -cos (mvals.light_dir * G_PI / 180.0);
   light_y =  sin (mvals.light_dir * G_PI / 180.0);
@@ -812,14 +812,14 @@ find_gradients (GimpDrawable *drawable,
 {
   GimpPixelRgn  src_rgn;
   GimpPixelRgn  dest_rgn;
-  gint          bytes;
+  //gint          bytes;
   gint          i, j;
   guchar       *gr, *dh, *dv;
   gint          hmax, vmax;
   gint          row, rows;
   gint          ith_row;
 
-  bytes = drawable->bpp;
+  //bytes = drawable->bpp;
 
   /*  allocate the gradient maps  */
   h_grad = g_new (guchar, width * height);
@@ -904,7 +904,6 @@ find_gradients (GimpDrawable *drawable,
         }
     }
 }
-
 
 static void
 find_max_gradient (GimpPixelRgn *src_rgn,
@@ -1457,7 +1456,7 @@ grid_localize (gint x1,
                gint x2,
                gint y2)
 {
-  gint     width, height;
+  gint     width; // height;
   gint     i, j;
   gint     k, l;
   gint     x3, y3, x4, y4;
@@ -1469,7 +1468,7 @@ grid_localize (gint x1,
   Vertex  *pt;
 
   width  = x2 - x1;
-  height = y2 - y1;
+  //height = y2 - y1;
   size = (gint) mvals.tile_size;
   rand_localize = size * (1.0 - mvals.tile_neatness);
 
@@ -1972,7 +1971,7 @@ clip_point (gdouble *dir,
             gdouble  y2,
             Polygon *poly_new)
 {
-  gdouble det, m11, m12, m21, m22;
+  gdouble det, m11, m12; // m21, m22;
   gdouble side1, side2;
   gdouble t;
   gdouble vec[2];
@@ -2009,8 +2008,8 @@ clip_point (gdouble *dir,
 
       m11 = vec[1] / det;
       m12 = -vec[0] / det;
-      m21 = -dir[1] / det;
-      m22 = dir[0] / det;
+      //m21 = -dir[1] / det;
+      //m22 = dir[0] / det;
 
       t = m11 * x1 + m12 * y1;
 
@@ -2045,7 +2044,7 @@ find_poly_dir (Polygon *poly,
   gint    xe, ye;
   gint    min_x, min_y;
   gint    max_x, max_y;
-  gint    size_x, size_y;
+  gint    size_y; //size_x
   gint   *max_scanlines;
   gint   *min_scanlines;
   guchar *dm, *dv, *dh;
@@ -2069,7 +2068,7 @@ find_poly_dir (Polygon *poly,
   max_y = (gint) dmax_y;
 
   size_y = max_y - min_y;
-  size_x = max_x - min_x;
+  //size_x = max_x - min_x;
 
   min_scanlines = g_new (gint, size_y);
   max_scanlines = g_new (gint, size_y);
@@ -2157,7 +2156,7 @@ find_poly_color (Polygon      *poly,
   gint          xe, ye;
   gint          min_x, min_y;
   gint          max_x, max_y;
-  gint          size_x, size_y;
+  gint          size_y; // size_x;
   gint         *max_scanlines;
   gint         *min_scanlines;
   gint          col_sum[4] = {0, 0, 0, 0};
@@ -2177,7 +2176,7 @@ find_poly_color (Polygon      *poly,
   max_y = (gint) dmax_y;
 
   size_y = max_y - min_y;
-  size_x = max_x - min_x;
+  //size_x = max_x - min_x;
 
   min_scanlines = g_new (int, size_y);
   max_scanlines = g_new (int, size_y);

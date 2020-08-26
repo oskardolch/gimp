@@ -28,8 +28,7 @@ pagecurl.c: $(pagecurl_built_sources)
 pagecurl_SOURCES = \
 	$(pagecurl_built_sources) $(pagecurl_sources)
 
-
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)

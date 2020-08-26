@@ -27,16 +27,13 @@
 
 #include "libgimp/stdplugins-intl.h"
 
-
 #define PLUG_IN_PROC   "plug-in-convmatrix"
 #define PLUG_IN_BINARY "convolution-matrix"
 
 #define RESPONSE_RESET 1
 
-
-#define BIG_MATRIX  /* toggle for 11x11 matrix code experimental*/
+#define BIG_MATRIX // toggle for 11x11 matrix code experimental
 #undef BIG_MATRIX
-
 
 #ifndef BIG_MATRIX
 #define MATRIX_SIZE   (5)
@@ -49,8 +46,6 @@
 #define DEST_ROWS     (MATRIX_SIZE/2 + 1)
 #define CHANNELS      (5)
 #define BORDER_MODES  (3)
-
-
 
 typedef enum
 {
@@ -75,32 +70,20 @@ static gchar * const bmode_labels[] =
   N_("Cro_p")
 };
 
-/* Declare local functions. */
-static void query (void);
-static void run   (const gchar      *name,
-                   gint              nparams,
-                   const GimpParam  *param,
-                   gint             *nreturn_vals,
-                   GimpParam       **return_vals);
-
-static gboolean  convolve_image_dialog (GimpDrawable  *drawable);
-
-static void      convolve_image        (GimpDrawable  *drawable,
-                                        GimpPreview   *preview);
-
-static void      check_config          (GimpDrawable  *drawable);
-
-static gfloat    convolve_pixel        (guchar       **src_row,
-                                        gint           x_offset,
-                                        gint           channel,
-                                        GimpDrawable  *drawable);
+// Declare local functions
+static void query(void);
+static void run(const gchar *name, gint nparams, const GimpParam *param, gint *nreturn_vals, GimpParam **return_vals);
+static gboolean convolve_image_dialog(GimpDrawable *drawable);
+static void convolve_image(GimpDrawable *drawable, GimpPreview *preview);
+static void check_config(GimpDrawable *drawable);
+static gfloat convolve_pixel(guchar **src_row, gint x_offset, gint channel, GimpDrawable *drawable);
 
 const GimpPlugInInfo PLUG_IN_INFO =
 {
-  NULL,   /* init_proc  */
-  NULL,   /* quit_proc  */
-  query,  /* query_proc */
-  run,    /* run_proc   */
+  NULL,  // init_proc
+  NULL,  // quit_proc
+  query, // query_proc
+  run,   // run_proc
 };
 
 static gboolean run_flag = FALSE;
@@ -125,13 +108,13 @@ static const config_struct default_config =
     { 0.0, 0.0, 1.0, 0.0, 0.0 },
     { 0.0, 0.0, 0.0, 0.0, 0.0 },
     { 0.0, 0.0, 0.0, 0.0, 0.0 }
-  },                 /* matrix */
-  1,                 /* divisor */
-  0,                 /* offset */
-  1,                 /* Alpha-handling algorithm */
-  CLEAR,             /* border-mode */
-  { TRUE, TRUE, TRUE, TRUE, TRUE }, /* Channels mask */
-  FALSE,              /* autoset */
+  },                 // matrix
+  1,                 // divisor
+  0,                 // offset
+  1,                 // Alpha-handling algorithm
+  CLEAR,             // border-mode
+  { TRUE, TRUE, TRUE, TRUE, TRUE }, // Channels mask
+  FALSE,             // autoset
 };
 
 #else
@@ -150,17 +133,16 @@ static const config_struct default_config =
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  },
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  },
     { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  }
-  },                 /* matrix */
-  1,                 /* divisor */
-  0,                 /* offset */
-  1,                 /* Alpha-handling algorithm */
-  CLEAR,             /* border-mode */
-  { TRUE, TRUE, TRUE, TRUE, TRUE }, /* Channels mask */
-  FALSE,              /* autoset */
+  },                 // matrix
+  1,                 // divisor
+  0,                 // offset
+  1,                 // Alpha-handling algorithm
+  CLEAR,             // border-mode
+  { TRUE, TRUE, TRUE, TRUE, TRUE }, // Channels mask
+  FALSE,             // autoset
 };
 
 #endif
-
 
 static config_struct config;
 
@@ -175,11 +157,9 @@ struct
   GtkWidget *autoset;
 } static widget_set;
 
+MAIN()
 
-MAIN ()
-
-static void
-query (void)
+static void query(void)
 {
   static const GimpParamDef args[] =
   {
@@ -197,277 +177,242 @@ query (void)
     { GIMP_PDB_INT32,      "bmode",         "Mode for treating image borders" },
   };
 
-  gimp_install_procedure (PLUG_IN_PROC,
-                          N_("Apply a generic 5x5 convolution matrix"),
-                          "",
-                          "Lauri Alanko",
-                          "Lauri Alanko",
-                          "1997",
-                          N_("_Convolution Matrix..."),
-                          "RGB*, GRAY*",
-                          GIMP_PLUGIN,
-                          G_N_ELEMENTS (args), 0,
-                          args, NULL);
+  gimp_install_procedure(PLUG_IN_PROC, N_("Apply a generic 5x5 convolution matrix"), "",
+    "Lauri Alanko", "Lauri Alanko", "1997", N_("_Convolution Matrix..."), "RGB*, GRAY*",
+    GIMP_PLUGIN, G_N_ELEMENTS (args), 0, args, NULL);
 
-  gimp_plugin_menu_register (PLUG_IN_PROC, "<Image>/Filters/Generic");
+  gimp_plugin_menu_register(PLUG_IN_PROC, "<Image>/Filters/Generic");
 }
 
-static void
-run (const gchar      *name,
-     gint              nparams,
-     const GimpParam  *param,
-     gint             *nreturn_vals,
-     GimpParam       **return_vals)
+static void run(const gchar *name, gint nparams, const GimpParam *param, gint *nreturn_vals, GimpParam **return_vals)
 {
-  static GimpParam   values[1];
-  GimpRunMode        run_mode;
-  GimpPDBStatusType  status = GIMP_PDB_SUCCESS;
-  gint               x, y;
-  GimpDrawable      *drawable;
+  static GimpParam  values[1];
+  GimpRunMode       run_mode;
+  GimpPDBStatusType status = GIMP_PDB_SUCCESS;
+  gint              x, y;
+  GimpDrawable     *drawable;
 
-  INIT_I18N ();
+  INIT_I18N();
 
   *nreturn_vals = 1;
   *return_vals = values;
 
   run_mode = param[0].data.d_int32;
 
-  /*  Get the specified drawable  */
-  drawable = gimp_drawable_get (param[2].data.d_drawable);
+  // Get the specified drawable
+  drawable = gimp_drawable_get(param[2].data.d_drawable);
 
-  /*  The plug-in is not able to handle images smaller than 3x3 pixels  */
-  if (drawable->width < 3 || drawable->height < 3)
-    {
-      g_message (_("Convolution does not work on layers "
-                   "smaller than 3x3 pixels."));
-      status = GIMP_PDB_EXECUTION_ERROR;
-      values[0].type = GIMP_PDB_STATUS;
-      values[0].data.d_status = status;
-      return;
-    }
+  // The plug-in is not able to handle images smaller than 3x3 pixels
+  if(drawable->width < 3 || drawable->height < 3)
+  {
+    g_message(_("Convolution does not work on layers smaller than 3x3 pixels."));
+    status = GIMP_PDB_EXECUTION_ERROR;
+    values[0].type = GIMP_PDB_STATUS;
+    values[0].data.d_status = status;
+    return;
+  }
 
   config = default_config;
-  if (run_mode == GIMP_RUN_NONINTERACTIVE)
+  if(run_mode == GIMP_RUN_NONINTERACTIVE)
+  {
+    if((nparams != 11) && (nparams != 12))
     {
-      if ((nparams != 11) && (nparams != 12))
-        {
-          status = GIMP_PDB_CALLING_ERROR;
-        }
-      else
-        {
-          if (param[3].data.d_int32 != MATRIX_CELLS)
-            {
-              status = GIMP_PDB_CALLING_ERROR;
-            }
-          else
-            {
-              for (y = 0; y < MATRIX_SIZE; y++)
-                for (x = 0; x < MATRIX_SIZE; x++)
-                  config.matrix[x][y]
-                    = param[4].data.d_floatarray[x * MATRIX_SIZE + y];
-            }
-
-          config.alpha_weighting = param[5].data.d_int32;
-          config.divisor   = param[6].data.d_float;
-          config.offset    = param[7].data.d_float;
-
-          if (param[8].data.d_int32 != CHANNELS)
-            {
-              status = GIMP_PDB_CALLING_ERROR;
-            }
-          else
-            {
-              for (y = 0; y < CHANNELS; y++)
-                config.channels[y] = param[9].data.d_int32array[y];
-            }
-
-          config.bmode     = param[10].data.d_int32;
-
-          check_config (drawable);
-        }
+      status = GIMP_PDB_CALLING_ERROR;
     }
+    else
+    {
+      if (param[3].data.d_int32 != MATRIX_CELLS)
+      {
+        status = GIMP_PDB_CALLING_ERROR;
+      }
+      else
+      {
+        for(y = 0; y < MATRIX_SIZE; y++)
+          for(x = 0; x < MATRIX_SIZE; x++)
+            config.matrix[x][y] = param[4].data.d_floatarray[x*MATRIX_SIZE + y];
+      }
+
+      config.alpha_weighting = param[5].data.d_int32;
+      config.divisor = param[6].data.d_float;
+      config.offset = param[7].data.d_float;
+
+      if(param[8].data.d_int32 != CHANNELS)
+      {
+        status = GIMP_PDB_CALLING_ERROR;
+      }
+      else
+      {
+        for(y = 0; y < CHANNELS; y++)
+          config.channels[y] = param[9].data.d_int32array[y];
+      }
+
+      config.bmode = param[10].data.d_int32;
+
+      check_config(drawable);
+    }
+  }
   else
+  {
+    gimp_get_data(PLUG_IN_PROC, &config);
+
+    if(run_mode == GIMP_RUN_INTERACTIVE)
     {
-      gimp_get_data (PLUG_IN_PROC, &config);
+      //  Oh boy. We get to do a dialog box, because we can't really
+      //  expect the user to set us up with the right values using gdb.
+      check_config(drawable);
 
-      if (run_mode == GIMP_RUN_INTERACTIVE)
-        {
-          /*  Oh boy. We get to do a dialog box, because we can't really
-           *  expect the user to set us up with the right values using gdb.
-           */
-          check_config (drawable);
+      if(!convolve_image_dialog(drawable))
+      {
+        // The dialog was closed, or something similarly evil happened.
+        status = GIMP_PDB_EXECUTION_ERROR;
+      }
+    }
+  }
 
-          if (! convolve_image_dialog (drawable))
-            {
-              /* The dialog was closed, or something similarly evil happened. */
-              status = GIMP_PDB_EXECUTION_ERROR;
-            }
-        }
+  if(status == GIMP_PDB_SUCCESS)
+  {
+    // Make sure that the drawable is gray or RGB color
+    if(gimp_drawable_is_rgb(drawable->drawable_id) || gimp_drawable_is_gray(drawable->drawable_id))
+    {
+      gimp_progress_init(_("Applying convolution"));
+      gimp_tile_cache_ntiles(2*(drawable->width/gimp_tile_width() + 1));
+      convolve_image(drawable, NULL);
+
+      if(run_mode != GIMP_RUN_NONINTERACTIVE)
+        gimp_displays_flush();
+
+      if(run_mode == GIMP_RUN_INTERACTIVE)
+        gimp_set_data(PLUG_IN_PROC, &config, sizeof(config));
+    }
+    else
+    {
+      status = GIMP_PDB_EXECUTION_ERROR;
     }
 
-  if (status == GIMP_PDB_SUCCESS)
-    {
-      /*  Make sure that the drawable is gray or RGB color  */
-      if (gimp_drawable_is_rgb (drawable->drawable_id) ||
-          gimp_drawable_is_gray (drawable->drawable_id))
-        {
-          gimp_progress_init (_("Applying convolution"));
-          gimp_tile_cache_ntiles (2 * (drawable->width /
-                                  gimp_tile_width () + 1));
-          convolve_image (drawable, NULL);
-
-          if (run_mode != GIMP_RUN_NONINTERACTIVE)
-            gimp_displays_flush ();
-
-          if (run_mode == GIMP_RUN_INTERACTIVE)
-            gimp_set_data (PLUG_IN_PROC, &config, sizeof (config));
-        }
-      else
-        {
-          status = GIMP_PDB_EXECUTION_ERROR;
-        }
-
-      gimp_drawable_detach (drawable);
-    }
+    gimp_drawable_detach (drawable);
+  }
 
   values[0].type = GIMP_PDB_STATUS;
   values[0].data.d_status = status;
 }
 
 
-/*  A generic wrapper to gimp_pixel_rgn_get_row which handles unlimited
- *  wrapping or gives the transparent regions outside the image
- *  fills additional bytes before and after image row to provide border modes.
- */
-
-static void
-my_get_row (GimpPixelRgn *PR,
-            guchar       *dest,
-            gint          x,
-            gint          y,
-            gint          w)
+// A generic wrapper to gimp_pixel_rgn_get_row which handles unlimited
+// wrapping or gives the transparent regions outside the image
+// fills additional bytes before and after image row to provide border modes.
+static void my_get_row(GimpPixelRgn *PR, guchar *dest, gint x, gint y, gint w)
 {
   gint width, height, bpp;
   gint i;
 
-  width  = PR->drawable->width;
+  width = PR->drawable->width;
   height = PR->drawable->height;
-  bpp  = PR->drawable->bpp;
+  bpp = PR->drawable->bpp;
 
-  /* Y-wrappings */
-  switch (config.bmode)
+  // Y-wrappings
+  switch(config.bmode)
+  {
+  case WRAP:
+    // Wrapped, so we get the proper row from the other side
+    while(y < 0) // This is the _sure_ way to wrap. :)
+      y += height;
+    while(y >= height)
+      y -= height;
+    break;
+  case CLEAR:
+    // Beyond borders, so set full transparent
+    if(y < 0 || y >= height)
     {
-    case WRAP:
-      /* Wrapped, so we get the proper row from the other side */
-      while (y < 0) /* This is the _sure_ way to wrap. :) */
-        y += height;
-      while (y >= height)
-        y -= height;
-      break;
-
-    case CLEAR:
-      /* Beyond borders, so set full transparent. */
-      if (y < 0 || y >= height)
-        {
-          memset (dest, 0, w * bpp);
-          return; /* Done, so back. */
-        }
-
-    case EXTEND:
-      y = CLAMP (y , 0 , height - 1);
-      break;
+      memset(dest, 0, w*bpp);
+      return; // Done, so back
     }
+    //break; ?
+  case EXTEND:
+    y = CLAMP(y, 0, height - 1);
+    break;
+  }
 
-
-  /* X-wrappings */
+  // X-wrappings
   switch (config.bmode)
+  {
+  case CLEAR:
+    if(x < 0)
     {
-    case CLEAR:
-      if (x < 0)
-        {
-          i = MIN (w, -x);
-          memset (dest, 0, i * bpp);
-          dest += i * bpp;
-          w -= i;
-          x += i;
-        }
-      if (w)
-        {
-          i = MIN (w, width);
-          gimp_pixel_rgn_get_row (PR, dest, x, y, i);
-          dest += i * bpp;
-          w -= i;
-          x += i;
-        }
-      if (w)
-        memset (dest, 0, w * bpp);
-      break;
-
-    case WRAP:
-      while (x < 0)
-        x += width;
-      i = MIN (w, width - x);
-      gimp_pixel_rgn_get_row (PR, dest, x, y, i);
+      i = MIN(w, -x);
+      memset(dest, 0, i*bpp);
+      dest += i*bpp;
       w -= i;
-      dest += i * bpp;
-      x = 0;
-      while (w)
-        {
-          i = MIN (w, width);
-          gimp_pixel_rgn_get_row (PR, dest, x, y, i);
-          w -= i;
-          dest += i * bpp;
-        }
-      break;
-
-    case EXTEND:
-      if (x < 0)
-        {
-          gimp_pixel_rgn_get_pixel (PR, dest, 0, y);
-          x++;
-          w--;
-          dest += bpp;
-
-          while (x < 0 && w)
-            {
-              for (i = 0; i < bpp; i++)
-                {
-                  *dest = *(dest - bpp);
-                  dest++;
-                }
-              x++;
-              w--;
-            }
-        }
-      if (w && width - x > 0)
-        {
-          i = MIN (w, width - x);
-          gimp_pixel_rgn_get_row (PR, dest, x, y, i);
-          w -= i;
-          dest += i * bpp;
-        }
-      while (w)
-        {
-          for (i = 0; i < bpp; i++)
-            {
-              *dest= *(dest - bpp);
-              dest++;
-            }
-          x++;
-          w--;
-        }
-      break;
-
+      x += i;
     }
+    if(w)
+    {
+      i = MIN(w, width);
+      gimp_pixel_rgn_get_row(PR, dest, x, y, i);
+      dest += i*bpp;
+      w -= i;
+      x += i;
+    }
+    if(w)
+      memset(dest, 0, w*bpp);
+    break;
+  case WRAP:
+    while(x < 0) x += width;
+    i = MIN(w, width - x);
+    gimp_pixel_rgn_get_row(PR, dest, x, y, i);
+    w -= i;
+    dest += i*bpp;
+    x = 0;
+    while(w)
+    {
+      i = MIN(w, width);
+      gimp_pixel_rgn_get_row(PR, dest, x, y, i);
+      w -= i;
+      dest += i*bpp;
+    }
+    break;
+  case EXTEND:
+    if(x < 0)
+    {
+      gimp_pixel_rgn_get_pixel(PR, dest, 0, y);
+      x++;
+      w--;
+      dest += bpp;
+
+      while(x < 0 && w)
+      {
+        for(i = 0; i < bpp; i++)
+        {
+          *dest = *(dest - bpp);
+          dest++;
+        }
+        x++;
+        w--;
+      }
+    }
+    if(w && width - x > 0)
+    {
+      i = MIN(w, width - x);
+      gimp_pixel_rgn_get_row(PR, dest, x, y, i);
+      w -= i;
+      dest += i*bpp;
+    }
+    while(w)
+    {
+      for(i = 0; i < bpp; i++)
+      {
+        *dest= *(dest - bpp);
+        dest++;
+      }
+      x++;
+      w--;
+    }
+    break;
+  }
 }
 
-static gfloat
-convolve_pixel (guchar       **src_row,
-                gint           x_offset,
-                gint           channel,
-                GimpDrawable  *drawable)
+static gfloat convolve_pixel(guchar **src_row, gint x_offset, gint channel, GimpDrawable *drawable)
 {
-  static gfloat matrixsum = 0; /* FIXME: this certainly breaks the preview */
+  static gfloat matrixsum = 0; // FIXME: this certainly breaks the preview
   static gint bpp         = 0;
 
   gfloat sum              = 0;
@@ -476,53 +421,51 @@ convolve_pixel (guchar       **src_row,
   gint   x, y;
   gint   alpha_channel;
 
-  if (!bpp)
-    {
-      bpp = drawable->bpp;
+  if(!bpp)
+  {
+    bpp = drawable->bpp;
 
-      for (y = 0; y < MATRIX_SIZE; y++)
-        for (x = 0; x < MATRIX_SIZE; x++)
-          {
-            temp = config.matrix[x][y];
-            matrixsum += ABS (config.matrix[x][y]);
-          }
-    }
+    for(y = 0; y < MATRIX_SIZE; y++)
+      for(x = 0; x < MATRIX_SIZE; x++)
+      {
+        temp = config.matrix[x][y];
+        matrixsum += ABS(config.matrix[x][y]);
+      }
+  }
 
   alpha_channel = bpp - 1;
 
-  for (y = 0; y < MATRIX_SIZE; y++)
-    for (x = 0; x < MATRIX_SIZE; x++)
+  for(y = 0; y < MATRIX_SIZE; y++)
+    for(x = 0; x < MATRIX_SIZE; x++)
+    {
+      temp = config.matrix[x][y];
+
+      if(channel != alpha_channel && config.alpha_weighting == 1)
       {
-        temp = config.matrix[x][y];
-
-        if (channel != alpha_channel && config.alpha_weighting == 1)
-          {
-            temp *= src_row[y][x_offset + x * bpp + alpha_channel - channel];
-            alphasum += ABS (temp);
-          }
-
-        temp *= src_row[y][x_offset + x * bpp];
-        sum += temp;
+        temp *= src_row[y][x_offset + x * bpp + alpha_channel - channel];
+        alphasum += ABS(temp);
       }
+
+      temp *= src_row[y][x_offset + x * bpp];
+      sum += temp;
+    }
 
   sum /= config.divisor;
 
-  if (channel != alpha_channel && config.alpha_weighting == 1)
-    {
-      if (alphasum != 0)
-        sum = sum * matrixsum / alphasum;
-      else
-        sum = 0;
-    }
+  if(channel != alpha_channel && config.alpha_weighting == 1)
+  {
+    if(alphasum != 0)
+      sum = sum * matrixsum/alphasum;
+    else
+      sum = 0;
+  }
 
   sum += config.offset;
 
   return sum;
 }
 
-static void
-convolve_image (GimpDrawable *drawable,
-                GimpPreview  *preview)
+static void convolve_image(GimpDrawable *drawable, GimpPreview *preview)
 {
   GimpPixelRgn  srcPR, destPR;
   gint          width, height, row, col;
@@ -537,354 +480,311 @@ convolve_image (GimpDrawable *drawable,
   gint          bpp;
   gint          alpha_channel;
 
-  /* Get the input area. This is the bounding box of the selection in
-   *  the image (or the entire image if there is no selection). Only
-   *  operating on the input area is simply an optimization. It doesn't
-   *  need to be done for correct operation. (It simply makes it go
-   *  faster, since fewer pixels need to be operated on).
-   */
-  if (preview)
-    {
-      gimp_preview_get_position (preview, &src_x1, &src_y1);
-      gimp_preview_get_size (preview, &src_w, &src_h);
-      src_x2 = src_x1 + src_w;
-      src_y2 = src_y1 + src_h;
-    }
+  // Get the input area. This is the bounding box of the selection in
+  // the image (or the entire image if there is no selection). Only
+  // operating on the input area is simply an optimization. It doesn't
+  // need to be done for correct operation. (It simply makes it go
+  // faster, since fewer pixels need to be operated on).
+  if(preview)
+  {
+    gimp_preview_get_position(preview, &src_x1, &src_y1);
+    gimp_preview_get_size(preview, &src_w, &src_h);
+    src_x2 = src_x1 + src_w;
+    src_y2 = src_y1 + src_h;
+  }
   else
-    {
-      gimp_drawable_mask_bounds (drawable->drawable_id,
-                                 &src_x1, &src_y1, &src_x2, &src_y2);
-      src_w = src_x2 - src_x1;
-      src_h = src_y2 - src_y1;
-    }
+  {
+    gimp_drawable_mask_bounds(drawable->drawable_id, &src_x1, &src_y1, &src_x2, &src_y2);
+    src_w = src_x2 - src_x1;
+    src_h = src_y2 - src_y1;
+  }
 
-  /* Get the size of the input image. (This will/must be the same
-   *  as the size of the output image.
-   */
+  // Get the size of the input image. (This will/must be the same
+  // as the size of the output image.
   width  = drawable->width;
   height = drawable->height;
   bpp  = drawable->bpp;
   alpha_channel = bpp - 1;
 
-  if (gimp_drawable_is_rgb (drawable->drawable_id))
-    {
-      for (i = 0; i < CHANNELS - 1; i++)
-        chanmask[i] = config.channels[i + 1];
-    }
-  else /* Grayscale */
-    {
-      chanmask[0] = config.channels[0];
-    }
+  if(gimp_drawable_is_rgb(drawable->drawable_id))
+  {
+    for(i = 0; i < CHANNELS - 1; i++)
+      chanmask[i] = config.channels[i + 1];
+  }
+  else // Grayscale
+  {
+    chanmask[0] = config.channels[0];
+  }
 
-  if (gimp_drawable_has_alpha (drawable->drawable_id))
+  if(gimp_drawable_has_alpha(drawable->drawable_id))
     chanmask[alpha_channel] = config.channels[4];
 
   src_row_w = src_w + HALF_WINDOW + HALF_WINDOW;
 
-  for (i = 0; i < MATRIX_SIZE; i++)
-    src_row[i] = g_new (guchar, src_row_w * bpp);
+  for(i = 0; i < MATRIX_SIZE; i++)
+    src_row[i] = g_new(guchar, src_row_w*bpp);
 
-  for (i = 0; i < DEST_ROWS; i++)
-    dest_row[i]= g_new (guchar, src_w * bpp);
+  for(i = 0; i < DEST_ROWS; i++)
+    dest_row[i]= g_new(guchar, src_w*bpp);
 
-  /*  initialize the pixel regions  */
-  x1 = MAX (src_x1 - HALF_WINDOW, 0);
-  y1 = MAX (src_y1 - HALF_WINDOW, 0);
-  x2 = MIN (src_x2 + HALF_WINDOW, width);
-  y2 = MIN (src_y2 + HALF_WINDOW, height);
-  gimp_pixel_rgn_init (&srcPR, drawable,
-                       x1, y1, x2 - x1, y2 - y1, FALSE, FALSE);
-  gimp_pixel_rgn_init (&destPR, drawable,
-                       src_x1, src_y1, src_w, src_h,
-                       preview == NULL, TRUE);
+  // initialize the pixel regions
+  x1 = MAX(src_x1 - HALF_WINDOW, 0);
+  y1 = MAX(src_y1 - HALF_WINDOW, 0);
+  x2 = MIN(src_x2 + HALF_WINDOW, width);
+  y2 = MIN(src_y2 + HALF_WINDOW, height);
+  gimp_pixel_rgn_init(&srcPR, drawable, x1, y1, x2 - x1, y2 - y1, FALSE, FALSE);
+  gimp_pixel_rgn_init(&destPR, drawable, src_x1, src_y1, src_w, src_h, preview == NULL, TRUE);
 
-  /* initialize source arrays */
-  for (i = 0; i < MATRIX_SIZE; i++)
-    my_get_row (&srcPR, src_row[i], src_x1 - HALF_WINDOW,
-                src_y1 - HALF_WINDOW + i , src_row_w);
+  // initialize source arrays
+  for(i = 0; i < MATRIX_SIZE; i++)
+    my_get_row(&srcPR, src_row[i], src_x1 - HALF_WINDOW, src_y1 - HALF_WINDOW + i, src_row_w);
 
-  for (row = src_y1; row < src_y2; row++)
-    {
-      gint channel;
+  for(row = src_y1; row < src_y2; row++)
+  {
+    gint channel;
 
-      x_offset = 0;
+    x_offset = 0;
 
-      for (col = src_x1; col < src_x2; col++)
-        for (channel = 0; channel < bpp; channel++)
-          {
-            guchar d;
+    for(col = src_x1; col < src_x2; col++)
+      for(channel = 0; channel < bpp; channel++)
+      {
+        guchar d;
 
-            if (chanmask[channel])
-              {
-                gint result;
-
-                result = ROUND (convolve_pixel (src_row,
-                                                x_offset, channel, drawable));
-                d = CLAMP (result, 0, 255);
-              }
-            else
-              {
-                /* copy unmodified pixel */
-                d = src_row[HALF_WINDOW][x_offset + HALF_WINDOW * bpp];
-              }
-
-            dest_row[HALF_WINDOW][x_offset] = d;
-            x_offset++;
-          }
-
-      if (row >= src_y1 + HALF_WINDOW)
-        gimp_pixel_rgn_set_row (&destPR,
-                                dest_row[0], src_x1, row - HALF_WINDOW, src_w);
-
-      if (row < src_y2 - 1)
+        if(chanmask[channel])
         {
-          tmp_row = dest_row[0];
+          gint result;
 
-          for (i = 0; i < DEST_ROWS - 1; i++)
-            dest_row[i] = dest_row[i + 1];
-
-          dest_row[DEST_ROWS - 1] = tmp_row;
-
-          tmp_row = src_row[0];
-
-          for (i = 0; i < MATRIX_SIZE - 1; i++)
-            src_row[i] = src_row[i + 1];
-
-          src_row[MATRIX_SIZE-1] = tmp_row;
-
-          my_get_row (&srcPR, src_row[MATRIX_SIZE - 1],
-                      src_x1 - HALF_WINDOW, row + HALF_WINDOW + 1, src_row_w);
+          result = ROUND(convolve_pixel(src_row, x_offset, channel, drawable));
+          d = CLAMP(result, 0, 255);
+        }
+        else
+        {
+          // copy unmodified pixel
+          d = src_row[HALF_WINDOW][x_offset + HALF_WINDOW * bpp];
         }
 
-      if ((row % 10 == 0) && !preview)
-        gimp_progress_update ((double) (row - src_y1) / src_h);
-    }
+        dest_row[HALF_WINDOW][x_offset] = d;
+        x_offset++;
+      }
 
-  /* put the remaining rows in the buffer in place */
-  for (i = 1; i <  DEST_ROWS; i++)
-    gimp_pixel_rgn_set_row (&destPR, dest_row[i],
-                            src_x1, src_y2 + i - 1 - HALF_WINDOW, src_w);
+    if(row >= src_y1 + HALF_WINDOW)
+      gimp_pixel_rgn_set_row(&destPR, dest_row[0], src_x1, row - HALF_WINDOW, src_w);
 
-
-  /*  update the region  */
-  if (preview)
+    if(row < src_y2 - 1)
     {
-      gimp_drawable_preview_draw_region (GIMP_DRAWABLE_PREVIEW (preview),
-                                         &destPR);
+      tmp_row = dest_row[0];
+
+      for(i = 0; i < DEST_ROWS - 1; i++)
+        dest_row[i] = dest_row[i + 1];
+
+      dest_row[DEST_ROWS - 1] = tmp_row;
+
+      tmp_row = src_row[0];
+
+      for(i = 0; i < MATRIX_SIZE - 1; i++)
+        src_row[i] = src_row[i + 1];
+
+      src_row[MATRIX_SIZE - 1] = tmp_row;
+
+      my_get_row(&srcPR, src_row[MATRIX_SIZE - 1], src_x1 - HALF_WINDOW, row + HALF_WINDOW + 1, src_row_w);
     }
+
+    if((row % 10 == 0) && !preview)
+      gimp_progress_update((double)(row - src_y1)/src_h);
+  }
+
+  // put the remaining rows in the buffer in place
+  for(i = 1; i <  DEST_ROWS; i++)
+    gimp_pixel_rgn_set_row(&destPR, dest_row[i], src_x1, src_y2 + i - 1 - HALF_WINDOW, src_w);
+
+
+  // update the region
+  if(preview)
+  {
+    gimp_drawable_preview_draw_region(GIMP_DRAWABLE_PREVIEW(preview), &destPR);
+  }
   else
-    {
-      gimp_drawable_flush (drawable);
-      gimp_drawable_merge_shadow (drawable->drawable_id, TRUE);
-      gimp_drawable_update (drawable->drawable_id,
-                            src_x1, src_y1, src_x2 - src_x1, src_y2 - src_y1);
-    }
+  {
+    gimp_drawable_flush(drawable);
+    gimp_drawable_merge_shadow(drawable->drawable_id, TRUE);
+    gimp_drawable_update(drawable->drawable_id, src_x1, src_y1, src_x2 - src_x1, src_y2 - src_y1);
+  }
 
-  for (i = 0; i < MATRIX_SIZE; i++)
-    g_free (src_row[i]);
+  for(i = 0; i < MATRIX_SIZE; i++)
+    g_free(src_row[i]);
 
-  for (i = 0; i < DEST_ROWS; i++)
-    g_free (dest_row[i]);
+  for(i = 0; i < DEST_ROWS; i++)
+    g_free(dest_row[i]);
 }
 
-/***************************************************
- * GUI stuff
- */
-
-static void
-redraw_matrix (void)
+// GUI stuff
+static void redraw_matrix(void)
 {
   gint  x, y;
   gchar buffer[12];
 
-  for (y = 0; y < MATRIX_SIZE; y++)
-    for (x = 0; x < MATRIX_SIZE; x++)
-      {
-        g_snprintf (buffer, sizeof (buffer), "%g", config.matrix[x][y]);
-        gtk_entry_set_text (GTK_ENTRY (widget_set.matrix[x][y]), buffer);
-      }
+  for(y = 0; y < MATRIX_SIZE; y++)
+    for(x = 0; x < MATRIX_SIZE; x++)
+    {
+      g_snprintf(buffer, sizeof(buffer), "%g", config.matrix[x][y]);
+      gtk_entry_set_text(GTK_ENTRY(widget_set.matrix[x][y]), buffer);
+    }
 }
 
-static void
-redraw_channels (void)
+static void redraw_channels(void)
 {
   gint i;
 
-  for (i = 0; i < CHANNELS; i++)
-    if (widget_set.channels[i])
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget_set.channels[i]),
-                                    config.channels[i]);
+  for(i = 0; i < CHANNELS; i++)
+    if(widget_set.channels[i])
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget_set.channels[i]), config.channels[i]);
 }
 
-static void
-redraw_autoset (void)
+static void redraw_autoset(void)
 {
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget_set.autoset),
-                                config.autoset);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget_set.autoset), config.autoset);
 }
 
-static void
-redraw_alpha_weighting (void)
+static void redraw_alpha_weighting(void)
 {
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget_set.alpha_weighting),
-                                config.alpha_weighting > 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget_set.alpha_weighting), config.alpha_weighting > 0);
 }
 
-static void
-redraw_off_and_div (void)
+static void redraw_off_and_div(void)
 {
   gchar buffer[12];
 
-  g_snprintf (buffer, sizeof (buffer), "%g", config.divisor);
-  gtk_entry_set_text (GTK_ENTRY (widget_set.divisor), buffer);
+  g_snprintf(buffer, sizeof(buffer), "%g", config.divisor);
+  gtk_entry_set_text(GTK_ENTRY(widget_set.divisor), buffer);
 
-  g_snprintf (buffer, sizeof (buffer), "%g", config.offset);
-  gtk_entry_set_text (GTK_ENTRY (widget_set.offset), buffer);
+  g_snprintf(buffer, sizeof(buffer), "%g", config.offset);
+  gtk_entry_set_text(GTK_ENTRY(widget_set.offset), buffer);
 }
 
-static void
-redraw_bmode (void)
+static void redraw_bmode(void)
 {
-  gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON (widget_set.bmode[config.bmode]), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget_set.bmode[config.bmode]), TRUE);
 }
 
-static void
-redraw_all (void)
+static void redraw_all(void)
 {
-  redraw_matrix ();
-  redraw_off_and_div ();
-  redraw_autoset ();
-  redraw_alpha_weighting ();
-  redraw_bmode ();
-  redraw_channels ();
+  redraw_matrix();
+  redraw_off_and_div();
+  redraw_autoset();
+  redraw_alpha_weighting();
+  redraw_bmode();
+  redraw_channels();
 }
 
-static void
-check_matrix (void)
+static void check_matrix(void)
 {
-  gint      x, y;
-  gboolean  valid = FALSE;
-  gfloat    sum   = 0.0;
+  gint x, y;
+  //gboolean valid = FALSE;
+  gfloat sum = 0.0;
 
-  for (y = 0; y < MATRIX_SIZE; y++)
-    for (x = 0; x < MATRIX_SIZE; x++)
-      {
-        sum += config.matrix[x][y];
-        if (config.matrix[x][y] != 0.0)
-          valid = TRUE;
-      }
-
-  if (config.autoset)
+  for(y = 0; y < MATRIX_SIZE; y++)
+    for(x = 0; x < MATRIX_SIZE; x++)
     {
-      if (sum > 0)
-        {
-          config.offset = 0;
-          config.divisor = sum;
-        }
-      else if (sum < 0)
-        {
-          config.offset = 255;
-          config.divisor = -sum;
-        }
-      else
-        {
-          config.offset = 128;
-          /* The sum is 0, so this is probably some sort of
-           * embossing filter. Should divisor be autoset to 1
-           * or left undefined, ie. for the user to define? */
-          config.divisor = 1;
-        }
-      redraw_off_and_div ();
+      sum += config.matrix[x][y];
+      //if(config.matrix[x][y] != 0.0)
+      //  valid = TRUE;
     }
+
+  if(config.autoset)
+  {
+    if(sum > 0)
+    {
+      config.offset = 0;
+      config.divisor = sum;
+    }
+    else if(sum < 0)
+    {
+      config.offset = 255;
+      config.divisor = -sum;
+    }
+    else
+    {
+      config.offset = 128;
+      // The sum is 0, so this is probably some sort of
+      // embossing filter. Should divisor be autoset to 1
+      // or left undefined, ie. for the user to define?
+      config.divisor = 1;
+    }
+    redraw_off_and_div();
+  }
 }
 
-static void
-response_callback (GtkWidget    *widget,
-                   gint          response_id,
-                   GimpDrawable *drawable)
+static void response_callback(GtkWidget *widget, gint response_id, GimpDrawable *drawable)
 {
   switch (response_id)
-    {
-    case RESPONSE_RESET:
-      config = default_config;
-      check_config (drawable);
-      redraw_all ();
-      break;
-
-    case GTK_RESPONSE_OK:
-      run_flag = TRUE;
-
-    default:
-      gtk_widget_destroy (GTK_WIDGET (widget));
-      break;
-    }
+  {
+  case RESPONSE_RESET:
+    config = default_config;
+    check_config(drawable);
+    redraw_all();
+    break;
+  case GTK_RESPONSE_OK:
+    run_flag = TRUE;
+  default:
+    gtk_widget_destroy(GTK_WIDGET(widget));
+    break;
+  }
 }
 
-/* Checks that the configuration is valid for the image type */
-static void
-check_config (GimpDrawable *drawable)
+// Checks that the configuration is valid for the image type
+static void check_config(GimpDrawable *drawable)
 {
   config.alpha_weighting = 0;
 
-  if (!gimp_drawable_has_alpha (drawable->drawable_id))
-    {
-      config.alpha_weighting = -1;
-      config.bmode           = EXTEND;
-    }
+  if(!gimp_drawable_has_alpha(drawable->drawable_id))
+  {
+    config.alpha_weighting = -1;
+    config.bmode           = EXTEND;
+  }
 }
 
-static void
-entry_callback (GtkWidget *widget,
-                gpointer   data)
+static void entry_callback(GtkWidget *widget, gpointer data)
 {
-  gfloat *value = (gfloat *) data;
+  gfloat *value = (gfloat*)data;
 
-  *value = atof (gtk_entry_get_text (GTK_ENTRY (widget)));
+  *value = atof(gtk_entry_get_text(GTK_ENTRY(widget)));
 
-  if (widget == widget_set.divisor)
-    gtk_dialog_set_response_sensitive (GTK_DIALOG (gtk_widget_get_toplevel (widget)),
-                                       GTK_RESPONSE_OK,
-                                       (*value != 0.0));
-  else if (widget != widget_set.offset)
-    check_matrix ();
+  if(widget == widget_set.divisor)
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(gtk_widget_get_toplevel (widget)),
+      GTK_RESPONSE_OK, (*value != 0.0));
+  else if(widget != widget_set.offset)
+    check_matrix();
 }
 
-
-static void
-my_toggle_callback (GtkWidget *widget,
-                    gboolean  *data)
+static void my_toggle_callback(GtkWidget *widget, gboolean *data)
 {
-  gint val = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+  gint val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   *data = val;
 
-  if (widget == widget_set.alpha_weighting)
+  if(widget == widget_set.alpha_weighting)
+  {
+    gtk_widget_set_sensitive(widget_set.bmode[CLEAR], val);
+    if(val == 0 && config.bmode == CLEAR)
     {
-      gtk_widget_set_sensitive (widget_set.bmode[CLEAR], val);
-      if (val == 0 && config.bmode == CLEAR)
-        {
-          config.bmode = EXTEND;
-          redraw_bmode ();
-        }
+      config.bmode = EXTEND;
+      redraw_bmode();
     }
-  else if (widget == widget_set.autoset)
-    {
-      gtk_widget_set_sensitive (widget_set.divisor, !val);
-      gtk_widget_set_sensitive (widget_set.offset, !val);
-      check_matrix ();
-    }
+  }
+  else if(widget == widget_set.autoset)
+  {
+    gtk_widget_set_sensitive(widget_set.divisor, !val);
+    gtk_widget_set_sensitive(widget_set.offset, !val);
+    check_matrix();
+  }
 }
 
-static void
-my_bmode_callback (GtkWidget *widget,
-                   gpointer   data)
+static void my_bmode_callback(GtkWidget *widget, gpointer data)
 {
-  config.bmode = GPOINTER_TO_INT (data) - 1;
+  config.bmode = GPOINTER_TO_INT(data) - 1;
 }
 
-static gboolean
-convolve_image_dialog (GimpDrawable *drawable)
+static gboolean convolve_image_dialog(GimpDrawable *drawable)
 {
   GtkWidget *dialog;
   GtkWidget *main_vbox;
@@ -901,247 +801,200 @@ convolve_image_dialog (GimpDrawable *drawable)
   gint       x, y, i;
   GSList    *group;
 
-  gimp_ui_init (PLUG_IN_BINARY, FALSE);
+  gimp_ui_init(PLUG_IN_BINARY, FALSE);
 
-  dialog = gimp_dialog_new (_("Convolution Matrix"), PLUG_IN_BINARY,
-                            NULL, 0,
-                            gimp_standard_help_func, PLUG_IN_PROC,
+  dialog = gimp_dialog_new(_("Convolution Matrix"), PLUG_IN_BINARY, NULL, 0,
+    gimp_standard_help_func, PLUG_IN_PROC, GIMP_STOCK_RESET, RESPONSE_RESET,
+    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 
-                            GIMP_STOCK_RESET, RESPONSE_RESET,
-                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                            GTK_STOCK_OK,     GTK_RESPONSE_OK,
+  gtk_dialog_set_alternative_button_order(GTK_DIALOG (dialog), RESPONSE_RESET,
+    GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1);
 
-                            NULL);
+  gimp_window_set_transient(GTK_WINDOW(dialog));
 
-  gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
-                                           RESPONSE_RESET,
-                                           GTK_RESPONSE_OK,
-                                           GTK_RESPONSE_CANCEL,
-                                           -1);
+  main_vbox = gtk_vbox_new(FALSE, 12);
+  gtk_container_set_border_width(GTK_CONTAINER(main_vbox), 12);
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), main_vbox);
+  gtk_widget_show(main_vbox);
 
-  gimp_window_set_transient (GTK_WINDOW (dialog));
+  preview = gimp_drawable_preview_new(drawable, NULL);
+  gtk_box_pack_start(GTK_BOX(main_vbox), preview, TRUE, TRUE, 0);
+  gtk_widget_show(preview);
 
-  main_vbox = gtk_vbox_new (FALSE, 12);
-  gtk_container_set_border_width (GTK_CONTAINER (main_vbox), 12);
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), main_vbox);
-  gtk_widget_show (main_vbox);
+  g_signal_connect_swapped(preview, "invalidated", G_CALLBACK(convolve_image), drawable);
 
-  preview = gimp_drawable_preview_new (drawable, NULL);
-  gtk_box_pack_start (GTK_BOX (main_vbox), preview, TRUE, TRUE, 0);
-  gtk_widget_show (preview);
+  main_hbox = gtk_hbox_new(FALSE, 12);
+  gtk_box_pack_start(GTK_BOX(main_vbox), main_hbox, FALSE, FALSE, 0);
+  gtk_widget_show(main_hbox),
 
-  g_signal_connect_swapped (preview, "invalidated",
-                            G_CALLBACK (convolve_image),
-                            drawable);
+  vbox = gtk_vbox_new(FALSE, 12);
+  gtk_box_pack_start(GTK_BOX(main_hbox), vbox, TRUE, TRUE, 0);
 
-  main_hbox = gtk_hbox_new (FALSE, 12);
-  gtk_box_pack_start (GTK_BOX (main_vbox), main_hbox, FALSE, FALSE, 0);
-  gtk_widget_show (main_hbox),
+  frame = gimp_frame_new(_("Matrix"));
+  gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, FALSE, 0);
 
-  vbox = gtk_vbox_new (FALSE, 12);
-  gtk_box_pack_start (GTK_BOX (main_hbox), vbox, TRUE, TRUE, 0);
+  inbox = gtk_vbox_new(FALSE, 12);
+  gtk_container_add(GTK_CONTAINER(frame), inbox);
 
-  frame = gimp_frame_new (_("Matrix"));
-  gtk_box_pack_start (GTK_BOX (vbox), frame, FALSE, FALSE, 0);
+  table = gtk_table_new(MATRIX_SIZE, MATRIX_SIZE, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(table), 4);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 4);
+  gtk_box_pack_start(GTK_BOX(inbox), table, TRUE, TRUE, 0);
 
-  inbox = gtk_vbox_new (FALSE, 12);
-  gtk_container_add (GTK_CONTAINER (frame), inbox);
+  for(y = 0; y < MATRIX_SIZE; y++)
+    for(x = 0; x < MATRIX_SIZE; x++)
+    {
+      widget_set.matrix[x][y] = entry = gtk_entry_new();
+      gtk_widget_set_size_request(entry, 40, -1);
+      gtk_table_attach(GTK_TABLE(table), entry, x, x + 1, y, y + 1,
+        GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+      gtk_widget_show(entry);
 
-  table = gtk_table_new (MATRIX_SIZE, MATRIX_SIZE, FALSE);
-  gtk_table_set_row_spacings (GTK_TABLE (table), 4);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 4);
-  gtk_box_pack_start (GTK_BOX (inbox), table, TRUE, TRUE, 0);
+      g_signal_connect(entry, "changed", G_CALLBACK(entry_callback), &config.matrix[x][y]);
+      g_signal_connect_swapped(entry, "changed", G_CALLBACK(gimp_preview_invalidate), preview);
+    }
 
-  for (y = 0; y < MATRIX_SIZE; y++)
-    for (x = 0; x < MATRIX_SIZE; x++)
-      {
-        widget_set.matrix[x][y] = entry = gtk_entry_new ();
-        gtk_widget_set_size_request (entry, 40, -1);
-        gtk_table_attach (GTK_TABLE (table), entry, x, x+1, y, y+1,
-                          GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-        gtk_widget_show (entry);
+  gtk_widget_show(table);
 
-        g_signal_connect (entry, "changed",
-                          G_CALLBACK (entry_callback),
-                          &config.matrix[x][y]);
-        g_signal_connect_swapped (entry, "changed",
-                                  G_CALLBACK (gimp_preview_invalidate),
-                                  preview);
-      }
+  box = gtk_hbox_new(FALSE, 6);
+  gtk_box_pack_start(GTK_BOX(inbox), box, FALSE, FALSE, 0);
 
-  gtk_widget_show (table);
+  table = gtk_table_new(1, 2, FALSE);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 6);
+  gtk_box_pack_start(GTK_BOX(box), table, TRUE, FALSE, 0);
 
-  box = gtk_hbox_new (FALSE, 6);
-  gtk_box_pack_start (GTK_BOX (inbox), box, FALSE, FALSE, 0);
+  label = gtk_label_new_with_mnemonic(_("D_ivisor:"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 0, 1);
+  gtk_widget_show(label);
 
+  widget_set.divisor = entry = gtk_entry_new();
+  gtk_widget_set_size_request(entry, 40, -1);
+  gtk_table_attach_defaults(GTK_TABLE(table), entry, 1, 2, 0, 1);
+  gtk_widget_show(entry);
+  gtk_label_set_mnemonic_widget(GTK_LABEL(label), entry);
 
-  table = gtk_table_new (1, 2, FALSE);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 6);
-  gtk_box_pack_start (GTK_BOX (box), table, TRUE, FALSE, 0);
+  g_signal_connect(entry, "changed", G_CALLBACK(entry_callback), &config.divisor);
+  g_signal_connect_swapped(entry, "changed", G_CALLBACK(gimp_preview_invalidate), preview);
 
-  label = gtk_label_new_with_mnemonic (_("D_ivisor:"));
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach_defaults (GTK_TABLE (table), label, 0, 1, 0, 1);
-  gtk_widget_show (label);
+  gtk_widget_show(table);
 
-  widget_set.divisor = entry = gtk_entry_new ();
-  gtk_widget_set_size_request (entry, 40, -1);
-  gtk_table_attach_defaults (GTK_TABLE (table), entry, 1, 2, 0, 1);
-  gtk_widget_show (entry);
-  gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
+  table = gtk_table_new(1, 2, FALSE);
+  gtk_table_set_col_spacings(GTK_TABLE(table), 6);
+  gtk_box_pack_start(GTK_BOX(box), table, TRUE, FALSE, 0);
 
-  g_signal_connect (entry, "changed",
-                    G_CALLBACK (entry_callback),
-                    &config.divisor);
-  g_signal_connect_swapped (entry, "changed",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
+  label = gtk_label_new_with_mnemonic(_("O_ffset:"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 0, 1);
+  gtk_widget_show(label);
 
-  gtk_widget_show (table);
+  widget_set.offset = entry = gtk_entry_new();
+  gtk_widget_set_size_request(entry, 40, -1);
+  gtk_table_attach_defaults(GTK_TABLE(table), entry, 1, 2, 0, 1);
+  gtk_widget_show(entry);
+  gtk_label_set_mnemonic_widget(GTK_LABEL(label), entry);
 
+  g_signal_connect(entry, "changed", G_CALLBACK(entry_callback), &config.offset);
+  g_signal_connect_swapped(entry, "changed", G_CALLBACK(gimp_preview_invalidate), preview);
 
+  gtk_widget_show(table);
 
-  table = gtk_table_new (1, 2, FALSE);
-  gtk_table_set_col_spacings (GTK_TABLE (table), 6);
-  gtk_box_pack_start (GTK_BOX (box), table, TRUE, FALSE, 0);
+  gtk_widget_show(box);
 
-  label = gtk_label_new_with_mnemonic (_("O_ffset:"));
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-  gtk_table_attach_defaults (GTK_TABLE (table), label, 0, 1, 0, 1);
-  gtk_widget_show (label);
+  gtk_widget_show(inbox);
+  gtk_widget_show(frame);
 
-  widget_set.offset = entry = gtk_entry_new ();
-  gtk_widget_set_size_request (entry, 40, -1);
-  gtk_table_attach_defaults (GTK_TABLE (table), entry, 1, 2, 0, 1);
-  gtk_widget_show (entry);
-  gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
-
-  g_signal_connect (entry, "changed",
-                    G_CALLBACK (entry_callback),
-                    &config.offset);
-  g_signal_connect_swapped (entry, "changed",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
-
-  gtk_widget_show (table);
-
-  gtk_widget_show (box);
-
-  gtk_widget_show (inbox);
-  gtk_widget_show (frame);
-
-  box = gtk_vbox_new (FALSE, 6);
-  gtk_box_pack_start (GTK_BOX (vbox), box, FALSE, FALSE, 0);
+  box = gtk_vbox_new(FALSE, 6);
+  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, FALSE, 0);
 
   widget_set.autoset = button =
-    gtk_check_button_new_with_mnemonic (_("N_ormalise"));
-  gtk_box_pack_start (GTK_BOX (box), button, TRUE, FALSE, 0);
-  gtk_widget_show (button);
+    gtk_check_button_new_with_mnemonic(_("N_ormalise"));
+  gtk_box_pack_start(GTK_BOX(box), button, TRUE, FALSE, 0);
+  gtk_widget_show(button);
 
-  g_signal_connect (button, "toggled",
-                    G_CALLBACK (my_toggle_callback),
-                    &config.autoset);
-  g_signal_connect_swapped (button, "toggled",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
+  g_signal_connect(button, "toggled", G_CALLBACK(my_toggle_callback), &config.autoset);
+  g_signal_connect_swapped(button, "toggled", G_CALLBACK(gimp_preview_invalidate), preview);
 
   widget_set.alpha_weighting = button =
-    gtk_check_button_new_with_mnemonic (_("A_lpha-weighting"));
-  if (config.alpha_weighting == -1)
-    gtk_widget_set_sensitive (button, FALSE);
-  gtk_box_pack_start (GTK_BOX (box), button, TRUE, FALSE, 0);
-  gtk_widget_show (button);
+    gtk_check_button_new_with_mnemonic(_("A_lpha-weighting"));
+  if(config.alpha_weighting == -1)
+    gtk_widget_set_sensitive(button, FALSE);
+  gtk_box_pack_start(GTK_BOX(box), button, TRUE, FALSE, 0);
+  gtk_widget_show(button);
 
-  g_signal_connect (button, "toggled",
-                    G_CALLBACK (my_toggle_callback),
-                    &config.alpha_weighting);
-  g_signal_connect_swapped (button, "toggled",
-                            G_CALLBACK (gimp_preview_invalidate),
-                            preview);
+  g_signal_connect(button, "toggled", G_CALLBACK(my_toggle_callback), &config.alpha_weighting);
+  g_signal_connect_swapped(button, "toggled", G_CALLBACK(gimp_preview_invalidate), preview);
 
-  gtk_widget_show (box);
-  gtk_widget_show (vbox);
+  gtk_widget_show(box);
+  gtk_widget_show(vbox);
 
-  inbox = gtk_vbox_new (FALSE, 12);
-  gtk_box_pack_start (GTK_BOX (main_hbox), inbox, FALSE, FALSE, 0);
+  inbox = gtk_vbox_new(FALSE, 12);
+  gtk_box_pack_start(GTK_BOX(main_hbox), inbox, FALSE, FALSE, 0);
 
-  frame = gimp_frame_new (_("Border"));
-  gtk_box_pack_start (GTK_BOX (inbox), frame, FALSE, FALSE, 0);
+  frame = gimp_frame_new(_("Border"));
+  gtk_box_pack_start(GTK_BOX(inbox), frame, FALSE, FALSE, 0);
 
-  box = gtk_vbox_new (FALSE, 2);
-  gtk_container_add (GTK_CONTAINER (frame), box);
+  box = gtk_vbox_new(FALSE, 2);
+  gtk_container_add(GTK_CONTAINER(frame), box);
 
   group = NULL;
 
-  for (i = 0; i < BORDER_MODES; i++)
+  for(i = 0; i < BORDER_MODES; i++)
+  {
+    widget_set.bmode[i] = button =
+      gtk_radio_button_new_with_mnemonic(group, gettext(bmode_labels[i]));
+    group = gtk_radio_button_get_group(GTK_RADIO_BUTTON (button));
+    gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
+    gtk_widget_show(button);
+
+    g_signal_connect(button, "toggled", G_CALLBACK(my_bmode_callback), GINT_TO_POINTER(i + 1));
+    g_signal_connect_swapped(button, "toggled", G_CALLBACK(gimp_preview_invalidate), preview);
+  }
+
+  gtk_widget_show(box);
+  gtk_widget_show(frame);
+
+  frame = gimp_frame_new(_("Channels"));
+  gtk_box_pack_start(GTK_BOX(inbox), frame, FALSE, FALSE, 0);
+
+  box = gtk_vbox_new(FALSE, 2);
+  gtk_container_add(GTK_CONTAINER(frame), box);
+
+  for(i = 0; i < CHANNELS; i++)
+  {
+    if((gimp_drawable_is_gray(drawable->drawable_id) && i == 0) ||
+      (gimp_drawable_is_rgb(drawable->drawable_id) && i >= 1 && i <= 3) ||
+      (gimp_drawable_has_alpha(drawable->drawable_id) && i == 4))
     {
-      widget_set.bmode[i] = button =
-        gtk_radio_button_new_with_mnemonic (group, gettext (bmode_labels[i]));
-      group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
-      gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
-      gtk_widget_show (button);
+      widget_set.channels[i] = button =
+        gtk_check_button_new_with_mnemonic(gettext(channel_labels[i]));
 
-      g_signal_connect (button, "toggled",
-                        G_CALLBACK (my_bmode_callback),
-                        GINT_TO_POINTER (i + 1));
-      g_signal_connect_swapped (button, "toggled",
-                                G_CALLBACK (gimp_preview_invalidate),
-                                preview);
+      gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
+      gtk_widget_show(button);
+
+      g_signal_connect(button, "toggled", G_CALLBACK(my_toggle_callback), &config.channels[i]);
+      g_signal_connect_swapped(button, "toggled", G_CALLBACK(gimp_preview_invalidate), preview);
     }
-
-  gtk_widget_show (box);
-  gtk_widget_show (frame);
-
-  frame = gimp_frame_new (_("Channels"));
-  gtk_box_pack_start (GTK_BOX (inbox), frame, FALSE, FALSE, 0);
-
-  box = gtk_vbox_new (FALSE, 2);
-  gtk_container_add (GTK_CONTAINER (frame), box);
-
-  for (i = 0; i < CHANNELS; i++)
+    else
     {
-      if ((gimp_drawable_is_gray (drawable->drawable_id) && i==0) ||
-          (gimp_drawable_is_rgb  (drawable->drawable_id) && i>=1 && i<=3) ||
-          (gimp_drawable_has_alpha (drawable->drawable_id) && i==4))
-        {
-          widget_set.channels[i] = button =
-            gtk_check_button_new_with_mnemonic (gettext (channel_labels[i]));
-
-          gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
-          gtk_widget_show (button);
-
-          g_signal_connect (button, "toggled",
-                            G_CALLBACK (my_toggle_callback),
-                            &config.channels[i]);
-          g_signal_connect_swapped (button, "toggled",
-                                    G_CALLBACK (gimp_preview_invalidate),
-                                    preview);
-        }
-      else
-        {
-          widget_set.channels[i] = NULL;
-        }
+      widget_set.channels[i] = NULL;
     }
+  }
 
-  gtk_widget_show (box);
-  gtk_widget_show (frame);
+  gtk_widget_show(box);
+  gtk_widget_show(frame);
 
-  gtk_widget_show (inbox);
+  gtk_widget_show(inbox);
 
-  g_signal_connect (dialog, "response",
-                    G_CALLBACK (response_callback),
-                    drawable);
-  g_signal_connect (dialog, "destroy",
-                    G_CALLBACK (gtk_main_quit),
-                    NULL);
+  g_signal_connect(dialog, "response", G_CALLBACK(response_callback), drawable);
+  g_signal_connect(dialog, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  gtk_widget_show (dialog);
-  redraw_all ();
+  gtk_widget_show(dialog);
+  redraw_all();
 
-  gtk_widget_set_sensitive (widget_set.bmode[CLEAR],
-                            (config.alpha_weighting > 0));
+  gtk_widget_set_sensitive(widget_set.bmode[CLEAR], (config.alpha_weighting > 0));
 
-  gtk_main ();
+  gtk_main();
 
   return run_flag;
 }

@@ -280,26 +280,31 @@ V3_Norm (HVect v)
 /* Return unit magnitude vector in direction of v */
 /* ============================================== */
 
-static HVect
-V3_Unit (HVect v)
+static HVect V3_Unit(HVect v)
 {
   static HVect u = {0, 0, 0, 0};
   double vlen = sqrt(V3_Norm(v));
 
-  if (vlen != 0.0) u.x = v.x/vlen; u.y = v.y/vlen; u.z = v.z/vlen;
-  return (u);
+  if(vlen != 0.0)
+  {
+    u.x = v.x/vlen;
+    u.y = v.y/vlen;
+    u.z = v.z/vlen;
+  }
+  return(u);
 }
 
 /* Return version of v scaled by s */
 /* =============================== */
 
-static HVect
-V3_Scale (HVect v,
-	  double s)
+static HVect V3_Scale(HVect v, double s)
 {
   HVect u;
-  u.x = s*v.x; u.y = s*v.y; u.z = s*v.z; u.w = v.w;
-  return (u);
+  u.x = s*v.x;
+  u.y = s*v.y;
+  u.z = s*v.z;
+  u.w = v.w;
+  return(u);
 }
 
 /* Return negative of v */

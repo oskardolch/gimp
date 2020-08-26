@@ -602,14 +602,14 @@ iwarp_supersample (gint    sxl,
                    gint   *progress,
                    gint    max_progress)
 {
-  gint         i, wx, wy, col, row, cc;
+  gint         i, col, row, cc; // wx, wy
   GimpVector2 *srow, *srow_old, *vh;
   gdouble      xv, yv;
   gint         color[4];
   guchar      *dest;
 
-  wx = sxr - sxl + 1;
-  wy = syr - syl + 1;
+  //wx = sxr - sxl + 1;
+  //wy = syr - syl + 1;
   srow     = g_new (GimpVector2, sxr - sxl + 1);
   srow_old = g_new (GimpVector2, sxr - sxl + 1);
 

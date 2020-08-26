@@ -1203,8 +1203,7 @@ do_move_up(void)
   */
 }
 
-void
-do_move_down(void)
+void do_move_down(void)
 {
   /* Fix me!
    Command_t *command = object_down_command_new(_current_obj->list,
@@ -1213,132 +1212,120 @@ do_move_down(void)
   */
 }
 
-void
-do_move_to_front(void)
+void do_move_to_front(void)
 {
   command_execute(move_to_front_command_new(_shapes));
 }
 
-void
-do_send_to_back(void)
+void do_send_to_back(void)
 {
   command_execute(send_to_back_command_new(_shapes));
 }
 
-void
-do_use_gimp_guides_dialog(void)
+void do_use_gimp_guides_dialog(void)
 {
-  command_execute (gimp_guides_command_new (_shapes, _drawable));
+  command_execute(gimp_guides_command_new(_shapes, _drawable));
 }
 
-void
-do_create_guides_dialog(void)
+void do_create_guides_dialog(void)
 {
-  command_execute (guides_command_new (_shapes));
+  command_execute(guides_command_new(_shapes));
 }
 
-static Command_t*
-factory_move_up(void)
+static Command_t* factory_move_up(void)
 {
-   return move_up_command_new(_shapes);
+  return move_up_command_new(_shapes);
 }
 
-static Command_t*
-factory_move_down(void)
+static Command_t* factory_move_down(void)
 {
-   return move_down_command_new(_shapes);
+  return move_down_command_new(_shapes);
 }
 
-static gint
-dialog(GimpDrawable *drawable)
+static gint dialog(GimpDrawable *drawable)
 {
-   GtkWidget    *dlg;
-   GtkWidget    *hbox;
-   GtkWidget    *main_vbox;
-   GtkWidget    *tools;
-   Menu_t       *menu;
+  GtkWidget    *dlg;
+  GtkWidget    *hbox;
+  GtkWidget    *main_vbox;
+  GtkWidget    *tools;
+  //Menu_t       *menu;
 
-   gimp_ui_init (PLUG_IN_BINARY, TRUE);
+  gimp_ui_init(PLUG_IN_BINARY, TRUE);
 
-   set_arrow_func ();
+  set_arrow_func();
 
-   _shapes = make_object_list();
+  _shapes = make_object_list();
 
-   _dlg = dlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
+  _dlg = dlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
 
-   main_set_title(NULL);
-   gimp_help_connect (dlg, gimp_standard_help_func, PLUG_IN_PROC, NULL);
+  main_set_title(NULL);
+  gimp_help_connect(dlg, gimp_standard_help_func, PLUG_IN_PROC, NULL);
 
-   gtk_window_set_position (GTK_WINDOW (dlg), GTK_WIN_POS_MOUSE);
+  gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_MOUSE);
 
-   gimp_window_set_transient (GTK_WINDOW (dlg));
+  gimp_window_set_transient(GTK_WINDOW (dlg));
 
-   g_signal_connect (dlg, "delete-event",
-                     G_CALLBACK (close_callback), NULL);
-   g_signal_connect (dlg, "key-press-event",
-                     G_CALLBACK (key_press_cb), NULL);
-   g_signal_connect (dlg, "key-release-event",
-                     G_CALLBACK (key_release_cb), NULL);
+  g_signal_connect(dlg, "delete-event", G_CALLBACK(close_callback), NULL);
+  g_signal_connect(dlg, "key-press-event", G_CALLBACK(key_press_cb), NULL);
+  g_signal_connect(dlg, "key-release-event", G_CALLBACK(key_release_cb), NULL);
 
-   g_signal_connect (dlg, "destroy",
-                     G_CALLBACK (gtk_main_quit),
-                     NULL);
+  g_signal_connect(dlg, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-   main_vbox = gtk_vbox_new(FALSE, 0);
-   gtk_container_add(GTK_CONTAINER(dlg), main_vbox);
-   gtk_widget_show(main_vbox);
+  main_vbox = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(dlg), main_vbox);
+  gtk_widget_show(main_vbox);
 
-   init_stock_icons();
+  init_stock_icons();
 
-   /* Create menu */
-   menu = make_menu(main_vbox, dlg);
+  // Create menu
+  //menu =
+  make_menu(main_vbox, dlg);
 
-   /* Create toolbar */
-   make_toolbar(main_vbox, dlg);
+  // Create toolbar
+  make_toolbar(main_vbox, dlg);
 
-   /*  Dialog area  */
-   hbox = gtk_hbox_new(FALSE, 1);
-   gtk_container_add(GTK_CONTAINER(main_vbox), hbox);
-   gtk_widget_show(hbox);
+  // Dialog area
+  hbox = gtk_hbox_new(FALSE, 1);
+  gtk_container_add(GTK_CONTAINER(main_vbox), hbox);
+  gtk_widget_show(hbox);
 
-   tools = make_tools(dlg);
-   /* selection_set_edit_command(tools, factory_edit); */
-   gtk_box_pack_start(GTK_BOX(hbox), tools, FALSE, FALSE, 0);
+  tools = make_tools(dlg);
+  //selection_set_edit_command(tools, factory_edit);
+  gtk_box_pack_start(GTK_BOX(hbox), tools, FALSE, FALSE, 0);
 
-   _preview = make_preview(drawable);
-   add_preview_motion_event(_preview, G_CALLBACK (preview_move));
-   add_enter_notify_event(_preview, G_CALLBACK (preview_enter));
-   add_leave_notify_event(_preview, G_CALLBACK (preview_leave));
-   add_preview_button_press_event(_preview, G_CALLBACK (button_press));
-   gtk_container_add(GTK_CONTAINER(hbox), _preview->window);
+  _preview = make_preview(drawable);
+  add_preview_motion_event(_preview, G_CALLBACK(preview_move));
+  add_enter_notify_event(_preview, G_CALLBACK(preview_enter));
+  add_leave_notify_event(_preview, G_CALLBACK(preview_leave));
+  add_preview_button_press_event(_preview, G_CALLBACK(button_press));
+  gtk_container_add(GTK_CONTAINER(hbox), _preview->window);
 
-   object_list_add_geometry_cb(_shapes, geometry_changed, NULL);
-   object_list_add_update_cb(_shapes, data_changed, NULL);
-   object_list_add_add_cb(_shapes, data_changed, NULL);
-   object_list_add_remove_cb(_shapes, data_changed, NULL);
-   object_list_add_move_cb(_shapes, data_changed, NULL);
-   object_list_add_select_cb(_shapes, data_selected, NULL);
+  object_list_add_geometry_cb(_shapes, geometry_changed, NULL);
+  object_list_add_update_cb(_shapes, data_changed, NULL);
+  object_list_add_add_cb(_shapes, data_changed, NULL);
+  object_list_add_remove_cb(_shapes, data_changed, NULL);
+  object_list_add_move_cb(_shapes, data_changed, NULL);
+  object_list_add_select_cb(_shapes, data_selected, NULL);
 
-   /* Selection */
-   _selection = make_selection(_shapes);
-   selection_set_move_up_command(_selection, factory_move_up);
-   selection_set_move_down_command(_selection, factory_move_down);
-   gtk_box_pack_start(GTK_BOX(hbox), _selection->container, FALSE, FALSE, 0);
+  // Selection
+  _selection = make_selection(_shapes);
+  selection_set_move_up_command(_selection, factory_move_up);
+  selection_set_move_down_command(_selection, factory_move_down);
+  gtk_box_pack_start(GTK_BOX(hbox), _selection->container, FALSE, FALSE, 0);
 
-   _statusbar = make_statusbar(main_vbox, dlg);
-   statusbar_set_zoom(_statusbar, 1);
+  _statusbar = make_statusbar(main_vbox, dlg);
+  statusbar_set_zoom(_statusbar, 1);
 
-   clear_map_info();
+  clear_map_info();
 
-   gtk_widget_show(dlg);
+  gtk_widget_show(dlg);
 
-   _mru = mru_create();
-   init_preferences();
-   if (!mru_empty(_mru))
-      menu_build_mru_items(_mru);
+  _mru = mru_create();
+  init_preferences();
+  if(!mru_empty(_mru)) menu_build_mru_items(_mru);
 
-   gtk_main();
+  gtk_main();
 
-   return run_flag;
+  return run_flag;
 }

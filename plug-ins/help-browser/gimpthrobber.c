@@ -174,9 +174,12 @@ gimp_throbber_construct_contents (GtkToolItem *tool_item)
   GtkWidget       *image;
   GtkToolbarStyle  style;
 
-  if (button->priv->image && button->priv->image->parent)
-    gtk_container_remove (GTK_CONTAINER (button->priv->image->parent),
-                          button->priv->image);
+  if (button->priv->image)
+  {
+    GtkWidget *parent = gtk_widget_get_parent(button->priv->image);
+    if(parent)
+      gtk_container_remove (GTK_CONTAINER (parent), button->priv->image);
+  }
 
   if (gtk_bin_get_child (GTK_BIN (button->priv->button)))
     gtk_widget_destroy (gtk_bin_get_child (GTK_BIN (button->priv->button)));
@@ -339,13 +342,13 @@ gimp_throbber_set_image (GimpThrobber *button,
   if (image != button->priv->image)
     {
       if (button->priv->image)
-	{
-	  if (button->priv->image->parent)
-            gtk_container_remove (GTK_CONTAINER (button->priv->image->parent),
-                                  button->priv->image);
+      {
+        GtkWidget *parent = gtk_widget_get_parent(button->priv->image);
+        if (parent)
+          gtk_container_remove (GTK_CONTAINER (parent), button->priv->image);
 
-	  g_object_unref (button->priv->image);
-	}
+        g_object_unref (button->priv->image);
+      }
 
       if (image)
         g_object_ref_sink (image);

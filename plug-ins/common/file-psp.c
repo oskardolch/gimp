@@ -853,7 +853,7 @@ try_fseek (FILE  *f,
   return 0;
 }
 
-static gint
+/*static gint
 read_extended_data_block (FILE     *f,
                           gint      image_ID,
                           guint     total_len,
@@ -880,13 +880,11 @@ read_extended_data_block (FILE     *f,
           g_message ("Invalid extended data chunk header");
           return -1;
         }
-      /* TODO Read keyword and assign it to PSPExtendedDataID */
+      // TODO Read keyword and assign it to PSPExtendedDataID
     }
 
   return 0;
-}
-
-
+}*/
 
 static gint
 read_creator_block (FILE     *f,
@@ -901,7 +899,7 @@ read_creator_block (FILE     *f,
   gchar        *string;
   gchar        *title = NULL, *artist = NULL, *copyright = NULL, *description = NULL;
   guint32       dword;
-  guint32       cdate = 0, mdate = 0, appid, appver;
+  //guint32       cdate = 0, mdate = 0, appid, appver;
   GString      *comment;
   GimpParasite *comment_parasite;
 
@@ -959,17 +957,21 @@ read_creator_block (FILE     *f,
               g_message ("Error reading creator keyword data");
               return -1;
             }
-          switch (keyword)
-            {
-            case PSP_CRTR_FLD_CRT_DATE:
-              cdate = dword; break;
-            case PSP_CRTR_FLD_MOD_DATE:
-              mdate = dword; break;
-            case PSP_CRTR_FLD_APP_ID:
-              appid = dword; break;
-            case PSP_CRTR_FLD_APP_VER:
-              appver = dword; break;
-            }
+          //switch (keyword)
+          //  {
+          //  case PSP_CRTR_FLD_CRT_DATE:
+          //    //cdate = dword;
+          //    break;
+          //  case PSP_CRTR_FLD_MOD_DATE:
+          //    //mdate = dword;
+          //    break;
+          //  case PSP_CRTR_FLD_APP_ID:
+          //    //appid = dword;
+          //    break;
+          //  case PSP_CRTR_FLD_APP_VER:
+          //    //appver = dword;
+          //    break;
+          //  }
           break;
         default:
           if (try_fseek (f, length, SEEK_CUR) < 0)

@@ -48,7 +48,7 @@ xmpdump_SOURCES = \
 	xmp-parse.h	\
 	xmp-parse.c	
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	$(EXIF_CFLAGS)	\

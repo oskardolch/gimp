@@ -397,12 +397,12 @@ tiff_warning (const gchar *module,
 
   if (! strcmp (fmt, "%s: unknown field with tag %d (0x%x) encountered"))
     {
-      const char *name;
+      //const char *name;
       va_list     ap_test;
 
       G_VA_COPY (ap_test, ap);
 
-      name = va_arg (ap_test, const char *);
+      //name = va_arg (ap_test, const char *);
       tag  = va_arg (ap_test, int);
     }
   /* for older versions of libtiff? */
@@ -1658,7 +1658,10 @@ read_16bit (const guchar *source,
 
             case PHOTOMETRIC_PALETTE:
               *dest++= *source; source += 2;
-              if (alpha) *dest++= *source; source += 2;
+              if (alpha)
+              {
+                *dest++= *source; source += 2;
+              }
               break;
 
             case PHOTOMETRIC_RGB:

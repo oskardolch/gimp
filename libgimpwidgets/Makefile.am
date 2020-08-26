@@ -49,9 +49,7 @@ endif
 libgimpwidgetsincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimpwidgets
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"LibGimpWidgets\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"LibGimpWidgets\" \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)
