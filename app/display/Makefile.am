@@ -5,9 +5,7 @@ xobjective_c = "-xobjective-c"
 endif
 
 AM_CPPFLAGS = \
-	-DG_LOG_DOMAIN=\"Gimp-Display\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"Gimp-Display\" \
 	-I$(top_builddir)	\
 	-I$(top_srcdir)		\
 	-I$(top_builddir)/app	\

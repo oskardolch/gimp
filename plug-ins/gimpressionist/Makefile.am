@@ -22,14 +22,12 @@ gimpressionist_RC = gimpressionist.rc.o
 endif
 
 AM_CPPFLAGS = \
-	-DDEFAULTPATH=\""~/$(gimpdir)/gimpressionist:$(gimpdatadir)/gimpressionist"\"
-
-AM_LDFLAGS = $(mwindows)
-
-INCLUDES = \
+	-DDEFAULTPATH=\""~/$(gimpdir)/gimpressionist:$(gimpdatadir)/gimpressionist"\" \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)
+
+AM_LDFLAGS = $(mwindows)
 
 libexecdir = $(gimpplugindir)/plug-ins
 

@@ -41,9 +41,8 @@ color_rotate_SOURCES = \
 	color-rotate-stock.c		\
 	color-rotate-stock.h
 
-INCLUDES = \
-	-I$(top_srcdir)	\
-	$(GTK_CFLAGS)	\
+AM_CPPFLAGS = -I$(top_srcdir) \
+	$(GTK_CFLAGS) \
 	-I$(includedir)
 
 LDADD = \

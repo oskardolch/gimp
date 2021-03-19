@@ -12,10 +12,9 @@ endif
 
 libdir = $(gimpplugindir)/modules
 
-INCLUDES = \
-        -I$(top_srcdir)	\
-        $(GTK_CFLAGS)	\
-        -I$(includedir)
+AM_CPPFLAGS = -I$(top_srcdir) \
+  $(GTK_CFLAGS) \
+  -I$(includedir)
 
 if HAVE_LCMS
 display_filter_lcms_module = libdisplay-filter-lcms.la

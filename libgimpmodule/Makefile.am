@@ -43,9 +43,7 @@ libgimpmoduleincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimpmodule
 
 AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"LibGimpModule\"	\
-	-DGIMP_MODULE_COMPILATION
-
-INCLUDES = \
+	-DGIMP_MODULE_COMPILATION \
 	-I$(top_srcdir)			\
 	$(GLIB_CFLAGS)			\
 	$(GMODULE_NO_EXPORT_CFLAGS)	\

@@ -64,9 +64,7 @@ gimpincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimp
 
 AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"LibGimp\"	\
-	-DGIMP_COMPILATION
-
-INCLUDES = \
+	-DGIMP_COMPILATION \
 	-I$(top_srcdir)	\
 	$(GTK_CFLAGS)	\
 	-I$(includedir)	\

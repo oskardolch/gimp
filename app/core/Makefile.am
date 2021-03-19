@@ -8,9 +8,7 @@ AM_CPPFLAGS = \
 	-DGIMPDIR=\""$(gimpdir)"\"			\
 	-DGIMP_APP_VERSION=\"$(GIMP_APP_VERSION)\"	\
 	-DGIMP_USER_VERSION=\"$(GIMP_USER_VERSION)\"	\
-	-DG_LOG_DOMAIN=\"Gimp-Core\"
-
-INCLUDES = \
+	-DG_LOG_DOMAIN=\"Gimp-Core\" \
 	-I$(top_builddir)	\
 	-I$(top_srcdir)		\
 	-I$(top_builddir)/app	\

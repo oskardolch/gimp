@@ -29,9 +29,8 @@ file_bmp_SOURCES = \
 	bmp-read.c	\
 	bmp-write.c
 
-INCLUDES = \
-	-I$(top_srcdir)	\
-	$(GTK_CFLAGS)	\
+AM_CPPFLAGS = -I$(top_srcdir) \
+	$(GTK_CFLAGS) \
 	-I$(includedir)
 
 LDADD = \

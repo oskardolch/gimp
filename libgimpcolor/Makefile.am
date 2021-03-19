@@ -48,9 +48,7 @@ libgimpcolorincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimpcolor
 
 AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"LibGimpColor\"	\
-	-DGIMP_COLOR_COMPILATION
-
-INCLUDES = \
+	-DGIMP_COLOR_COMPILATION \
 	-I$(top_srcdir)	\
 	$(CAIRO_CFLAGS)	\
 	$(GLIB_CFLAGS)	\

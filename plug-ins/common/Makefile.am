@@ -42,9 +42,8 @@ EXTRA_DIST = \
 	plugin-defs.pl	\
 	gimprc.common
 
-INCLUDES = \
-	-I$(top_srcdir)	\
-	$(GTK_CFLAGS)	\
+AM_CPPFLAGS = -I$(top_srcdir) \
+	$(GTK_CFLAGS) \
 	-I$(includedir)
 
 libexec_PROGRAMS = \

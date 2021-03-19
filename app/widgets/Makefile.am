@@ -5,11 +5,9 @@ xobjective_c = "-xobjective-c"
 endif
 
 AM_CPPFLAGS = \
-        -DISO_CODES_LOCATION=\"$(ISO_CODES_LOCATION)\"		\
-        -DISO_CODES_LOCALEDIR=\"$(ISO_CODES_LOCALEDIR)\"	\
-	-DG_LOG_DOMAIN=\"Gimp-Widgets\"
-
-INCLUDES = \
+  -DISO_CODES_LOCATION=\"$(ISO_CODES_LOCATION)\"		\
+  -DISO_CODES_LOCALEDIR=\"$(ISO_CODES_LOCALEDIR)\"	\
+	-DG_LOG_DOMAIN=\"Gimp-Widgets\" \
 	-I$(top_builddir)		\
 	-I$(top_srcdir)			\
 	-I$(top_builddir)/app	\

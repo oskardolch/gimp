@@ -46,9 +46,7 @@ libgimpthumbincludedir = $(includedir)/gimp-$(GIMP_API_VERSION)/libgimpthumb
 
 AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"LibGimpThumb\"	\
-	-DGIMP_THUMB_COMPILATION
-
-INCLUDES = \
+	-DGIMP_THUMB_COMPILATION \
 	-I$(top_srcdir)		\
 	$(GDK_PIXBUF_CFLAGS)	\
 	$(GIO_CFLAGS)		\
